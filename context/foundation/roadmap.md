@@ -29,7 +29,7 @@ Zespół w jednej organizacji GitHub zbudował warsztat pracy z AI — skille, r
 
 | ID    | Change ID                   | Outcome (user can …)                                                                                     | Prerequisites | PRD refs                                        | Status   |
 | ----- | --------------------------- | ------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------- | -------- |
-| F-01  | package-skeleton            | (foundation) pakiet npm + build + testy + wewnętrzna struktura paczki gotowe do rozwijania               | —             | FR-001; Success Criteria (struktura paczki)     | ready    |
+| F-01  | package-skeleton            | (foundation) pakiet npm + build + testy + wewnętrzna struktura paczki gotowe do rozwijania               | —             | FR-001; Success Criteria (struktura paczki)     | planning |
 | S-01  | consumer-install-symlink    | zainstalować paczkę przez standardową instalację i dostać skille + blok reguł, z nietkniętymi dopiskami   | F-01          | US-02, FR-005, FR-006, FR-007, FR-008, FR-009   | proposed |
 | S-02  | consumer-update-and-reconcile | zaktualizować / powtórzyć instalację i dostać nową treść bez śladu po wycofanych artefaktach, bez diffa | S-01          | US-02, FR-010                                   | proposed |
 | S-03  | consumer-uninstall-clean    | zdeinstalować paczkę i zostać z czystym repo (zero pozostałości)                                          | S-01          | US-02, FR-011                                   | proposed |
@@ -73,7 +73,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Bez szkieletu żaden slice nie jest plannowalny — nie ma czego `npm init`-ować. Trzymać minimalnie: stubowane wejścia, nie logika instalatora; pierwszy konsument (S-01) buduje prawdziwą logikę uzgadniania stanu i przez nią przechodzi realna weryfikacja tej warstwy. Przy blokerze `time` największe ryzyko to przeskalowanie szkieletu pod „przyszłe" potrzeby.
-- **Status:** ready
+- **Status:** planning
 
 ## Slices
 

@@ -409,27 +409,27 @@ reference templates are left untouched (they are lesson material, not package so
 
 #### Automated
 
-- [x] 1.1 Dependencies install: `npm install`
-- [x] 1.2 Build emits the three entrypoints: `npm run build && node -e "require('fs').accessSync('dist/cli.js')"`
-- [x] 1.3 Type checking passes: `npm run typecheck`
-- [x] 1.4 CLI help works: `node bin/ai-toolkit.js --help` exits 0 and lists `install` and `uninstall`
-- [x] 1.5 `postinstall` stub is non-fatal: re-running `npm install` completes without error
+- [x] 1.1 Dependencies install: `npm install` — ddaba39
+- [x] 1.2 Build emits the three entrypoints: `npm run build && node -e "require('fs').accessSync('dist/cli.js')"` — ddaba39
+- [x] 1.3 Type checking passes: `npm run typecheck` — ddaba39
+- [x] 1.4 CLI help works: `node bin/ai-toolkit.js --help` exits 0 and lists `install` and `uninstall` — ddaba39
+- [x] 1.5 `postinstall` stub is non-fatal: re-running `npm install` completes without error — ddaba39
 
 #### Manual
 
-- [x] 1.6 `git status` after `npm install` shows no unexpected tracked-file changes
-- [x] 1.7 Package name scope `@10xpackages` accepted by maintainer or flagged for S-06
+- [x] 1.6 `git status` after `npm install` shows no unexpected tracked-file changes — ddaba39
+- [x] 1.7 Package name scope `@10xpackages` accepted by maintainer or flagged for S-06 — ddaba39
 
 ### Phase 2: Package payload and test harness
 
 #### Automated
 
-- [ ] 2.1 Test suite passes: `npm test`
-- [ ] 2.2 Build still green: `npm run build`
-- [ ] 2.3 Type check still green with test files included: `npm run typecheck`
-- [ ] 2.4 Tarball contents correct: `npm pack --dry-run` includes payload, excludes `src/`/`test/`/`context/`
+- [x] 2.1 Test suite passes: `npm test`
+- [x] 2.2 Build still green: `npm run build`
+- [x] 2.3 Type check still green with test files included: `npm run typecheck`
+- [x] 2.4 Tarball contents correct: `npm pack --dry-run` includes payload, excludes `src/`/`test/`/`context/`
 
 #### Manual
 
-- [ ] 2.5 Sample `SKILL.md` and `rules/CLAUDE.md` read as sensible starting content
-- [ ] 2.6 No payload file contains the sentinel marker strings
+- [x] 2.5 Sample `SKILL.md` and `rules/CLAUDE.md` read as sensible starting content
+- [x] 2.6 No payload file contains the sentinel marker strings

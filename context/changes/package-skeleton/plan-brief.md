@@ -37,6 +37,8 @@ that S-01 / S-05 will import.
 | `bin` target                   | Committed `bin/ai-toolkit.js` shim      | Keeps `package.json#bin` / `postinstall` independent of the tsup output layout.         | Plan     |
 | `postinstall` behaviour        | No-op + notice when not a nested dep    | `npm install` in this repo runs `postinstall`; it must stay green and non-fatal.        | Plan     |
 | CI workflow                    | Excluded                                | S-06 (`ci-publish-on-merge`) owns publishing.                                            | Research |
+| TS module resolution           | `moduleResolution: "Bundler"`           | tsup owns emit; avoids `tsc` demanding `.js` import extensions and failing typecheck.    | Plan     |
+| Tarball packing                | Ship an `.npmignore`                    | Stops npm falling back to `.gitignore` and stripping git-ignored `dist/` from publish.   | Plan     |
 
 ## Scope
 

@@ -104,7 +104,10 @@ Phase 1 delivers a compiling package; Phase 2 makes it verifiable and gives it c
   the shim so the `package.json#bin` target is build-layout-independent).
 - **`files` whitelist is the publish contract** — Phase 2's `npm pack --dry-run` test is
   the guardrail against shipping `src/`, `test/`, or `context/`. If tsup output path
-  changes, that test and `package.json#files` move together.
+  changes, that test and `package.json#files` move together. Note the npm packing rule:
+  with a `files` allowlist and **no** `.npmignore`, npm falls back to `.gitignore` for
+  exclusions — so `dist/` (git-ignored) would be dropped from the tarball. Phase 1 ships
+  an `.npmignore` to stop that fallback; the Phase 2 test asserts `dist/cli.js` is packed.
 
 ## Phase 1: Manifest, tooling, and entry stubs
 
@@ -131,7 +134,8 @@ tooling. Privacy comes from the GitHub Packages registry ACL, so `private` is om
 - `files`: `["dist/", "skills/", "rules/", "bin/", "README.md"]`.
 - `bin`: `{ "ai-toolkit": "bin/ai-toolkit.js" }`.
 - `scripts`: `build` = `tsup`, `typecheck` = `tsc --noEmit`, `test` = `vitest run`,
-  `prepublishOnly` = `npm run build`, `postinstall` = `node bin/ai-toolkit.js install`.
+  `pretest` = `npm run build`, `prepublishOnly` = `npm run build`,
+  `postinstall` = `node bin/ai-toolkit.js install`.
 - `devDependencies`: `typescript`, `tsup`, `vitest`, `@types/node` (pin to current
   major ranges).
 
@@ -143,8 +147,12 @@ tooling. Privacy comes from the GitHub Packages registry ACL, so `private` is om
 emit (tsup owns emit).
 
 **Contract**: `compilerOptions`: `strict: true`, `target: "ES2022"`,
-`module: "NodeNext"`, `moduleResolution: "NodeNext"`, `noEmit: true`,
+`module: "ESNext"`, `moduleResolution: "Bundler"`, `noEmit: true`,
 `esModuleInterop: true`, `skipLibCheck: true`, `types: ["node"]`. `include: ["src", "test"]`.
+
+`moduleResolution: "Bundler"` (not `"NodeNext"`) because tsup/esbuild owns emit — this
+avoids `tsc` requiring explicit `.js` extensions on the relative imports in `src/cli.ts`
+(`./install`, `./uninstall`, `./manifest`), which would otherwise fail the typecheck step.
 
 #### 3. Build config
 
@@ -229,14 +237,19 @@ broken install) it must fail soft — wrap the `require` in try/catch → `conso
 
 #### 10. Repo hygiene files
 
-**Files**: `.gitignore`, `.npmrc`, `README.md`
+**Files**: `.gitignore`, `.npmignore`, `.npmrc`, `README.md`
 
-**Intent**: `.gitignore` excludes `node_modules/` and `dist/`. `.npmrc` records the
-scope→registry mapping for the source-of-truth repo. `README.md` is a short package
-description (also shipped in the tarball per `files`).
+**Intent**: `.gitignore` excludes `node_modules/` and `dist/`. `.npmignore` must exist so
+npm stops consulting `.gitignore` when building the tarball — otherwise `dist/` (ignored
+in git, but listed in `files` and required by the published package + S-06) gets stripped
+from the publish. `.npmrc` records the scope→registry mapping for the source-of-truth
+repo. `README.md` is a short package description (also shipped in the tarball per `files`).
 
 **Contract**:
 - `.gitignore`: `node_modules/`, `dist/`, `*.log`.
+- `.npmignore`: dev-only paths — `src/`, `test/`, `*.config.ts`, `tsconfig.json`,
+  `context/`, `.claude/`, `.github/`. The `files` allowlist is the primary control; this
+  file's job is to neutralise the `.gitignore` fallback so `dist/` survives packing.
 - `.npmrc`: single line `@10xpackages:registry=https://npm.pkg.github.com` (no token).
 - `README.md`: name, one-paragraph purpose, "install / uninstall are stubs until S-01"
   note, pointer to `context/foundation/`.
@@ -322,8 +335,10 @@ to a temp dir.
 **Contract**:
 - `package.json#files` includes `dist/`, `skills/`, `rules/`, `bin/`, `README.md`.
 - `skills/code-review/SKILL.md` and `rules/CLAUDE.md` exist and are non-empty.
-- `execSync("npm pack --dry-run --json")` output lists `skills/code-review/SKILL.md`
-  and `rules/CLAUDE.md` and does **not** list any `src/` or `test/` or `context/` path.
+- `execSync("npm pack --dry-run --json")` output lists `skills/code-review/SKILL.md`,
+  `rules/CLAUDE.md`, and `dist/cli.js` (the `pretest` build guarantees `dist/` exists),
+  and does **not** list any `src/`, `test/`, or `context/` path. The `dist/` assertion is
+  the regression guard for the `.gitignore`/`.npmignore` packing interaction.
 
 ### Success Criteria:
 
@@ -395,7 +410,7 @@ reference templates are left untouched (they are lesson material, not package so
 #### Automated
 
 - [ ] 1.1 Dependencies install: `npm install`
-- [ ] 1.2 Build emits the three entrypoints: `npm run build` then `dist/cli.js` exists
+- [ ] 1.2 Build emits the three entrypoints: `npm run build && node -e "require('fs').accessSync('dist/cli.js')"`
 - [ ] 1.3 Type checking passes: `npm run typecheck`
 - [ ] 1.4 CLI help works: `node bin/ai-toolkit.js --help` exits 0 and lists `install` and `uninstall`
 - [ ] 1.5 `postinstall` stub is non-fatal: re-running `npm install` completes without error

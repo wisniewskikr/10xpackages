@@ -1,7 +1,7 @@
 ---
 change_id: package-skeleton
 title: Package skeleton
-status: planned
+status: plan_reviewed
 created: 2026-08-28
 updated: 2026-08-28
 archived_at: null

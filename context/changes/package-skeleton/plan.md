@@ -424,12 +424,12 @@ reference templates are left untouched (they are lesson material, not package so
 
 #### Automated
 
-- [x] 2.1 Test suite passes: `npm test`
-- [x] 2.2 Build still green: `npm run build`
-- [x] 2.3 Type check still green with test files included: `npm run typecheck`
-- [x] 2.4 Tarball contents correct: `npm pack --dry-run` includes payload, excludes `src/`/`test/`/`context/`
+- [x] 2.1 Test suite passes: `npm test` — 9ead141
+- [x] 2.2 Build still green: `npm run build` — 9ead141
+- [x] 2.3 Type check still green with test files included: `npm run typecheck` — 9ead141
+- [x] 2.4 Tarball contents correct: `npm pack --dry-run` includes payload, excludes `src/`/`test/`/`context/` — 9ead141
 
 #### Manual
 
-- [x] 2.5 Sample `SKILL.md` and `rules/CLAUDE.md` read as sensible starting content
-- [x] 2.6 No payload file contains the sentinel marker strings
+- [x] 2.5 Sample `SKILL.md` and `rules/CLAUDE.md` read as sensible starting content — 9ead141
+- [x] 2.6 No payload file contains the sentinel marker strings — 9ead141

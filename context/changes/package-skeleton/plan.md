@@ -409,16 +409,16 @@ reference templates are left untouched (they are lesson material, not package so
 
 #### Automated
 
-- [ ] 1.1 Dependencies install: `npm install`
-- [ ] 1.2 Build emits the three entrypoints: `npm run build && node -e "require('fs').accessSync('dist/cli.js')"`
-- [ ] 1.3 Type checking passes: `npm run typecheck`
-- [ ] 1.4 CLI help works: `node bin/ai-toolkit.js --help` exits 0 and lists `install` and `uninstall`
-- [ ] 1.5 `postinstall` stub is non-fatal: re-running `npm install` completes without error
+- [x] 1.1 Dependencies install: `npm install`
+- [x] 1.2 Build emits the three entrypoints: `npm run build && node -e "require('fs').accessSync('dist/cli.js')"`
+- [x] 1.3 Type checking passes: `npm run typecheck`
+- [x] 1.4 CLI help works: `node bin/ai-toolkit.js --help` exits 0 and lists `install` and `uninstall`
+- [x] 1.5 `postinstall` stub is non-fatal: re-running `npm install` completes without error
 
 #### Manual
 
-- [ ] 1.6 `git status` after `npm install` shows no unexpected tracked-file changes
-- [ ] 1.7 Package name scope `@10xpackages` accepted by maintainer or flagged for S-06
+- [x] 1.6 `git status` after `npm install` shows no unexpected tracked-file changes
+- [x] 1.7 Package name scope `@10xpackages` accepted by maintainer or flagged for S-06
 
 ### Phase 2: Package payload and test harness
 

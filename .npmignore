@@ -1,0 +1,12 @@
+# The `files` allowlist in package.json is the primary control over tarball
+# contents. This file exists so npm does NOT fall back to .gitignore when
+# packing — otherwise `dist/` (git-ignored, but required in the published
+# package and by CI publish / S-06) would be stripped from `npm publish`.
+src/
+test/
+*.config.ts
+tsconfig.json
+context/
+.claude/
+.github/
+*.tgz

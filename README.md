@@ -6,20 +6,22 @@ merge, and one-command install in any consumer repo.
 
 ## Status
 
-**Consumer install — symlink mode (S-01).** `install` now performs a real
-reconcile against the consumer project. `uninstall` is still a stub (S-03).
+**Consumer install + update reconcile (S-01, S-02).** `install` performs a real
+reconcile against the consumer project, including removing artifacts withdrawn
+since the last version and staying diff-free on CRLF repos. `uninstall` is still
+a stub (S-03).
 
-Not yet implemented: update / withdrawn-artifact reconcile (S-02), uninstall
-(S-03), copy-mode `npx` install for repos without a project manifest (S-04), and
-the rich unsafe-state refusals — corrupted-block abort with a file/line pointer,
-sentinel-injection guard, full skill-name-collision policy (S-05).
+Not yet implemented: uninstall (S-03), copy-mode `npx` install for repos without
+a project manifest (S-04), and the rich unsafe-state refusals — corrupted-block
+abort with a file/line pointer, sentinel-injection guard, full
+skill-name-collision policy (S-05).
 
 ## Layout
 
 ```
 src/            TypeScript sources (build input)
   manifest.ts   sentinel markers + ToolkitManifest contract
-  install.ts    installer — skill links, rules block, .npmrc line, manifest
+  install.ts    installer — skill links, rules block, .npmrc line, manifest, withdrawn-artifact prune
   uninstall.ts  uninstaller entrypoint (stub — S-03)
   cli.ts        `ai-toolkit` command dispatch
 bin/ai-toolkit.js   thin launcher -> dist/cli.js
@@ -58,11 +60,36 @@ The `postinstall` hook runs `ai-toolkit install`, which reconciles the project:
 
 Running the install twice produces no diff (idempotent).
 
+### Consumer update
+
+Bumping `@10xpackages/ai-toolkit` in the consumer's manifest and running a normal
+install (`npm update`, or a plain re-install) re-runs the same reconcile:
+
+- **New content roams automatically.** Skill entries are symlinks/junctions into
+  `node_modules`, so a new package version's skills are picked up with no
+  installer action. The `CLAUDE.md` rules block is re-derived from the payload on
+  every run, so it always reflects the installed version.
+- **Withdrawn artifacts are removed.** The installer diffs the previous
+  `.claude/.ai-toolkit-manifest.json` against the files the new version
+  produces; a skill dropped from the new version has its
+  `.claude/skills/<name>` link deleted, and an emptied `.claude/skills/` is
+  removed. A stale entry the consumer has replaced with a real directory is left
+  in place with a warning; a missing or unreadable prior manifest skips the
+  cleanup (with a warning) rather than guessing what to delete.
+- **Still diff-free.** A re-run on a clean tree produces no diff, including in a
+  repo whose `CLAUDE.md` / `.npmrc` use CRLF endings — the installer compares
+  content ignoring line-ending style and writes back with the file's own EOL.
+
+What an update does **not** touch: content outside the rules-block markers,
+unrelated `.npmrc` entries, and — on a downgrade or removal — the rules block and
+the `.npmrc` line themselves (removing those is `uninstall`'s job, S-03).
+
 ### What to commit
 
-- **Commit** `.claude/.ai-toolkit-manifest.json` — update and uninstall read it,
-  so keeping it in version control makes those operations reproducible for the
-  whole team.
+- **Commit** `.claude/.ai-toolkit-manifest.json` — the update reconcile diffs the
+  committed manifest against the new version to decide what to remove, and
+  uninstall reads it too, so keeping it in version control makes both operations
+  reproducible for the whole team.
 - **Gitignore the managed skill entries** under `.claude/skills/` — in symlink
   mode they are regenerated from `node_modules` on every install, and a
   committed symlink is fragile across platforms (a Windows checkout without
@@ -77,5 +104,5 @@ local `npm login` — never a committed token.
 ## Context
 
 Product docs live in [`context/foundation/`](context/foundation/): `prd.md`,
-`roadmap.md`, `tech-stack.md`. This change's plan is in
-`context/changes/consumer-install-symlink/`.
+`roadmap.md`, `tech-stack.md`. Per-change plans are in `context/changes/` —
+`consumer-install-symlink/` (S-01) and `consumer-update-and-reconcile/` (S-02).

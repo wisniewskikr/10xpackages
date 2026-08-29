@@ -445,22 +445,22 @@ ran S-01) simply gets a first install with an empty prune.
 
 #### Automated
 
-- [x] 2.1 Type check passes: `npm run typecheck`
-- [x] 2.2 Test suite passes: `npm test`
-- [x] 2.3 New CRLF cases assert byte-identical `CLAUDE.md` / `.npmrc` across two `runInstall` calls
+- [x] 2.1 Type check passes: `npm run typecheck` — 35b6960
+- [x] 2.2 Test suite passes: `npm test` — 35b6960
+- [x] 2.3 New CRLF cases assert byte-identical `CLAUDE.md` / `.npmrc` across two `runInstall` calls — 35b6960
 
 #### Manual
 
-- [x] 2.4 Scratch repo with CRLF `CLAUDE.md` + `.npmrc` and `eol=crlf` gitattributes: install then re-install → `git diff` empty, CRLF preserved
+- [x] 2.4 Scratch repo with CRLF `CLAUDE.md` + `.npmrc` and `eol=crlf` gitattributes: install then re-install → `git diff` empty, CRLF preserved — 35b6960
 
 ### Phase 3: Consumer update documentation
 
 #### Automated
 
-- [ ] 3.1 `npm run build && npm test` still green
-- [ ] 3.2 `npm pack --dry-run` unchanged
+- [x] 3.1 `npm run build && npm test` still green
+- [x] 3.2 `npm pack --dry-run` unchanged
 
 #### Manual
 
-- [ ] 3.3 README "Consumer update" section reads correctly and the scope boundary with uninstall (S-03) is unambiguous
-- [ ] 3.4 `## Status` paragraph reflects S-02 implemented
+- [x] 3.3 README "Consumer update" section reads correctly and the scope boundary with uninstall (S-03) is unambiguous
+- [x] 3.4 `## Status` paragraph reflects S-02 implemented

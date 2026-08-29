@@ -403,3 +403,88 @@ describe("runInstall — withdrawn-artifact reconcile (S-02)", () => {
     expect(readdirSync(skillsDir)).not.toContain("legacy-thing");
   });
 });
+
+/** True when `s` contains no bare LF (every `\n` is preceded by `\r`). */
+function isPureCrlf(s: string): boolean {
+  return !/[^\r]\n/.test(s) && s.includes("\r\n");
+}
+
+describe("runInstall — CRLF consumer repos (S-02)", () => {
+  const originalProjectRoot = process.env.PROJECT_ROOT;
+  const originalAuthToken = process.env.NODE_AUTH_TOKEN;
+  let consumerRoot: string;
+  let claudeMd: string;
+  let npmrc: string;
+
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    consumerRoot = mkdtempSync(join(tmpdir(), "ai-toolkit-consumer-"));
+    process.env.PROJECT_ROOT = consumerRoot;
+    delete process.env.NODE_AUTH_TOKEN;
+    claudeMd = join(consumerRoot, "CLAUDE.md");
+    npmrc = join(consumerRoot, ".npmrc");
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(consumerRoot, { recursive: true, force: true });
+    if (originalProjectRoot === undefined) delete process.env.PROJECT_ROOT;
+    else process.env.PROJECT_ROOT = originalProjectRoot;
+    if (originalAuthToken === undefined) delete process.env.NODE_AUTH_TOKEN;
+    else process.env.NODE_AUTH_TOKEN = originalAuthToken;
+  });
+
+  it("keeps CRLF CLAUDE.md byte-identical across a second run (block already present)", async () => {
+    writeFileSync(
+      claudeMd,
+      `# Header keep me\r\n\r\n${BEGIN}\r\nOLD TEAM RULES\r\n${END}\r\n\r\n## Footer keep me too\r\n`,
+    );
+
+    await runInstall();
+    const afterFirst = readFileSync(claudeMd, "utf8");
+    expect(isPureCrlf(afterFirst)).toBe(true);
+    expect(afterFirst).toContain(RULES_MARKER);
+    expect(afterFirst).toContain("# Header keep me");
+    expect(afterFirst).toContain("## Footer keep me too");
+    expect(afterFirst).not.toContain("OLD TEAM RULES");
+
+    await runInstall();
+    expect(readFileSync(claudeMd, "utf8")).toBe(afterFirst);
+  });
+
+  it("appends the block to a CRLF CLAUDE.md with no markers, then is byte-identical on re-run", async () => {
+    writeFileSync(claudeMd, "# My rules\r\n\r\nkeep this line\r\n");
+
+    await runInstall();
+    const afterFirst = readFileSync(claudeMd, "utf8");
+    expect(afterFirst).toContain("keep this line");
+    expect(afterFirst.split(BEGIN).length - 1).toBe(1);
+    expect(isPureCrlf(afterFirst)).toBe(true);
+
+    await runInstall();
+    expect(readFileSync(claudeMd, "utf8")).toBe(afterFirst);
+  });
+
+  it("does not rewrite a CRLF .npmrc that already carries the registry line", async () => {
+    const seeded = `@other:registry=https://example.com/\r\n${REGISTRY_LINE}\r\n`;
+    writeFileSync(npmrc, seeded);
+
+    await runInstall();
+
+    expect(readFileSync(npmrc, "utf8")).toBe(seeded);
+  });
+
+  it("appends the missing line to a CRLF .npmrc while preserving its endings", async () => {
+    writeFileSync(npmrc, "@other:registry=https://example.com/\r\n");
+
+    await runInstall();
+    const afterFirst = readFileSync(npmrc, "utf8");
+    expect(afterFirst).toContain(REGISTRY_LINE);
+    expect(afterFirst).toContain("@other:registry=https://example.com/");
+    expect(isPureCrlf(afterFirst)).toBe(true);
+
+    await runInstall();
+    expect(readFileSync(npmrc, "utf8")).toBe(afterFirst);
+  });
+});

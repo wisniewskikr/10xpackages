@@ -42,6 +42,16 @@ function toManifestPath(consumerRoot: string, absPath: string): string {
   return path.relative(consumerRoot, absPath).split(path.sep).join("/");
 }
 
+/** Drop CR so line-ending style alone doesn't register as a content change. */
+function stripCr(text: string): string {
+  return text.replace(/\r\n/g, "\n");
+}
+
+/** Re-apply CRLF endings to text assembled with LF. */
+function toCrlf(text: string): string {
+  return stripCr(text).replace(/\n/g, "\r\n");
+}
+
 /**
  * Symlink (POSIX) / directory-junction (Windows) each shipped skill directory
  * into `<consumerRoot>/.claude/skills/<name>`. Roaming mode: the link points at
@@ -124,6 +134,10 @@ function linkSkills(consumerRoot: string): string[] {
  *   the rich abort with a file/line pointer (FR-012) and the sentinel-injection
  *   guard (FR-014) are S-05.
  *
+ * A consumer file that uses CRLF endings keeps them: the result is written back
+ * with the detected EOL style and is only rewritten when the *content* actually
+ * differs, so a no-op re-run in a CRLF repo produces no diff.
+ *
  * Returns `["CLAUDE.md"]` when the block is in place, `[]` when it skipped.
  */
 function applyRulesBlock(consumerRoot: string): string[] {
@@ -155,10 +169,12 @@ function applyRulesBlock(consumerRoot: string): string[] {
     return [];
   }
 
-  const next =
+  const nextLf =
     begin !== -1
       ? existing.slice(0, begin) + block + existing.slice(end + SENTINEL_END.length)
-      : existing.trimEnd() + "\n\n" + block + "\n";
+      : stripCr(existing).trimEnd() + "\n\n" + block + "\n";
+
+  const next = /\r\n/.test(existing) ? toCrlf(nextLf) : nextLf;
 
   if (next !== existing) fs.writeFileSync(targetPath, next);
   return ["CLAUDE.md"];
@@ -169,7 +185,8 @@ function applyRulesBlock(consumerRoot: string): string[] {
  * line, and — only when `NODE_AUTH_TOKEN` is set at install time — a credential
  * line that *references* the env var (npm expands it at read time, so no secret
  * is ever written to the file). Existing lines are never parsed or reordered;
- * a line is appended only if no line already equals it (trimmed).
+ * a line is appended only if no line already equals it (trimmed, CR-insensitive).
+ * A CRLF `.npmrc` keeps its endings and is only rewritten when a line is added.
  *
  * Returns `[".npmrc"]` when the file exists or was created, else `[]`.
  */
@@ -183,10 +200,11 @@ function ensureNpmrc(consumerRoot: string): string[] {
 
   const existedBefore = fs.existsSync(npmrcPath);
   const original = existedBefore ? fs.readFileSync(npmrcPath, "utf8") : "";
-  const lines = original
-    .replace(/\n+$/, "")
-    .split("\n")
-    .filter((line, _i, all) => !(all.length === 1 && line === ""));
+  const eol = original.includes("\r\n") ? "\r\n" : "\n";
+  const lines =
+    original.trim() === ""
+      ? []
+      : stripCr(original).replace(/\n+$/, "").split("\n");
 
   const present = (line: string): boolean =>
     lines.some((existing) => existing.trim() === line);
@@ -202,7 +220,7 @@ function ensureNpmrc(consumerRoot: string): string[] {
     }
   }
 
-  if (changed) fs.writeFileSync(npmrcPath, lines.join("\n") + "\n");
+  if (changed) fs.writeFileSync(npmrcPath, lines.join(eol) + eol);
   return existedBefore || changed ? [".npmrc"] : [];
 }
 

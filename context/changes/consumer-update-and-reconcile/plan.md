@@ -431,27 +431,27 @@ ran S-01) simply gets a first install with an empty prune.
 
 #### Automated
 
-- [x] 1.1 Build passes: `npm run build`
-- [x] 1.2 Type check passes: `npm run typecheck`
-- [x] 1.3 Test suite passes (incl. new S-02 prune cases): `npm test`
-- [x] 1.4 `npm pack --dry-run` still lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
+- [x] 1.1 Build passes: `npm run build` — eea0175
+- [x] 1.2 Type check passes: `npm run typecheck` — eea0175
+- [x] 1.3 Test suite passes (incl. new S-02 prune cases): `npm test` — eea0175
+- [x] 1.4 `npm pack --dry-run` still lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json` — eea0175
 
 #### Manual
 
-- [x] 1.5 Scratch repo: seeded `.claude/skills/legacy-thing` junction is removed on re-run, `code-review` kept, `git status` clean on the following run
-- [x] 1.6 A real-directory `legacy-thing` is left in place with a warning
+- [x] 1.5 Scratch repo: seeded `.claude/skills/legacy-thing` junction is removed on re-run, `code-review` kept, `git status` clean on the following run — eea0175
+- [x] 1.6 A real-directory `legacy-thing` is left in place with a warning — eea0175
 
 ### Phase 2: CRLF idempotency hardening
 
 #### Automated
 
-- [ ] 2.1 Type check passes: `npm run typecheck`
-- [ ] 2.2 Test suite passes: `npm test`
-- [ ] 2.3 New CRLF cases assert byte-identical `CLAUDE.md` / `.npmrc` across two `runInstall` calls
+- [x] 2.1 Type check passes: `npm run typecheck`
+- [x] 2.2 Test suite passes: `npm test`
+- [x] 2.3 New CRLF cases assert byte-identical `CLAUDE.md` / `.npmrc` across two `runInstall` calls
 
 #### Manual
 
-- [ ] 2.4 Scratch repo with CRLF `CLAUDE.md` + `.npmrc` and `eol=crlf` gitattributes: install then re-install → `git diff` empty, CRLF preserved
+- [x] 2.4 Scratch repo with CRLF `CLAUDE.md` + `.npmrc` and `eol=crlf` gitattributes: install then re-install → `git diff` empty, CRLF preserved
 
 ### Phase 3: Consumer update documentation
 

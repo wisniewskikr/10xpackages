@@ -512,16 +512,16 @@ so local `npm install` stays a quiet no-op — no migration needed. The
 
 #### Automated
 
-- [ ] 1.1 Build passes: `npm run build`
-- [ ] 1.2 Type check passes: `npm run typecheck`
-- [ ] 1.3 Test suite passes (incl. new `test/install.test.ts`): `npm test`
-- [ ] 1.4 `npm audit` reports 0 advisories (or documents residual as dev-only/unfixable)
-- [ ] 1.5 `npm pack --dry-run` still lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
+- [x] 1.1 Build passes: `npm run build`
+- [x] 1.2 Type check passes: `npm run typecheck`
+- [x] 1.3 Test suite passes (incl. new `test/install.test.ts`): `npm test`
+- [x] 1.4 `npm audit` reports 0 advisories (or documents residual as dev-only/unfixable)
+- [x] 1.5 `npm pack --dry-run` still lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
 
 #### Manual
 
-- [ ] 1.6 Scratch-repo `PROJECT_ROOT=<dir> node bin/ai-toolkit.js install` creates the skill link resolving into the package; re-run leaves `git status` clean
-- [ ] 1.7 On Windows the junction is created without Developer Mode / elevation
+- [x] 1.6 Scratch-repo `PROJECT_ROOT=<dir> node bin/ai-toolkit.js install` creates the skill link resolving into the package; re-run leaves `git status` clean
+- [x] 1.7 On Windows the junction is created without Developer Mode / elevation
 
 ### Phase 2: Team rules block injection
 

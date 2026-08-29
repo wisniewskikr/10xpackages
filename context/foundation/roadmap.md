@@ -30,7 +30,7 @@ Zespół w jednej organizacji GitHub zbudował warsztat pracy z AI — skille, r
 | ID    | Change ID                   | Outcome (user can …)                                                                                     | Prerequisites | PRD refs                                        | Status   |
 | ----- | --------------------------- | ------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------- | -------- |
 | F-01  | package-skeleton            | (foundation) pakiet npm + build + testy + wewnętrzna struktura paczki gotowe do rozwijania               | —             | FR-001; Success Criteria (struktura paczki)     | in-progress |
-| S-01  | consumer-install-symlink    | zainstalować paczkę przez standardową instalację i dostać skille + blok reguł, z nietkniętymi dopiskami   | F-01          | US-02, FR-005, FR-006, FR-007, FR-008, FR-009   | planning |
+| S-01  | consumer-install-symlink    | zainstalować paczkę przez standardową instalację i dostać skille + blok reguł, z nietkniętymi dopiskami   | F-01          | US-02, FR-005, FR-006, FR-007, FR-008, FR-009   | in-progress |
 | S-02  | consumer-update-and-reconcile | zaktualizować / powtórzyć instalację i dostać nową treść bez śladu po wycofanych artefaktach, bez diffa | S-01          | US-02, FR-010                                   | proposed |
 | S-03  | consumer-uninstall-clean    | zdeinstalować paczkę i zostać z czystym repo (zero pozostałości)                                          | S-01          | US-02, FR-011                                   | proposed |
 | S-04  | standalone-copy-install     | zainstalować paczkę jednym poleceniem `npx` w repo bez manifestu projektu (Python/Go/Rust)               | S-01          | US-02, FR-005                                   | proposed |
@@ -90,7 +90,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Kolizja nazwy skilla z istniejącym artefaktem konsumenta — ostrzeżenie / prefiks scope / przerwanie (OQ-5). Owner: administrator paczki. Block: no (MVP domyślnie „ostrzeż i pomiń"; pełna polityka w S-05).
   - Czy manifest instalacji commitować, czy dodać do ignorowanych plików kontroli wersji (OQ-6). Owner: administrator paczki. Block: no (rekomendacja do README).
 - **Risk:** Slice z najwyższym ładunkiem ryzyka — znaczniki graniczne, dokładanie tylko brakującej linii w konfiguracji menedżera pakietów, idempotencja pierwszego przebiegu, brak trwałego poświadczenia w repo. Sekwencjonowany zaraz po F-01, bo to gwiazda przewodnia i cała ścieżka konsumenta z niego wychodzi. Co może pójść źle: wciąganie zakresu aktualizacji / deinstalacji / trybu copy — te są celowo wydzielone do S-02..S-04.
-- **Status:** planning
+- **Status:** in-progress
 
 ### S-02: Aktualizacja i uzgodnienie stanu u konsumenta
 

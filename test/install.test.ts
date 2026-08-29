@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { runInstall } from "../src/install";
+import { buildRulesBlock, runInstall } from "../src/install";
 import {
   PACKAGE_NAME,
   PACKAGE_VERSION,
@@ -643,5 +643,23 @@ describe("runInstall — standalone copy mode (S-04)", () => {
     );
     expect(existsSync(join(consumerRoot, SKILL_LINK_REL, "SKILL.md"))).toBe(true);
     expect(readManifest().files).not.toContain(legacyRel);
+  });
+});
+
+describe("buildRulesBlock — sentinel-injection guard (FR-014)", () => {
+  it("wraps a clean payload between the two markers", () => {
+    const block = buildRulesBlock("Be concise.\nCite files.");
+    expect(block).not.toBeNull();
+    expect(block?.startsWith(BEGIN)).toBe(true);
+    expect(block?.trimEnd().endsWith(END)).toBe(true);
+    expect(block).toContain("Be concise.");
+  });
+
+  it("returns null when the payload body contains the BEGIN marker", () => {
+    expect(buildRulesBlock(`rules\n${BEGIN}\nplanted`)).toBeNull();
+  });
+
+  it("returns null when the payload body contains the END marker", () => {
+    expect(buildRulesBlock(`rules ${END} still rules`)).toBeNull();
   });
 });

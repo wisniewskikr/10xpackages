@@ -209,6 +209,20 @@ function copySkills(consumerRoot: string): string[] {
 }
 
 /**
+ * Build the sentinel-fenced team-rules block from the shipped payload body, or
+ * return `null` when that body itself contains either boundary marker — the
+ * FR-014 sentinel-injection guard. Writing such a block would let the *next*
+ * install mistake the planted marker for a real fence and splice away consumer
+ * content that lives outside the block.
+ */
+export function buildRulesBlock(teamRules: string): string | null {
+  if (teamRules.includes(SENTINEL_BEGIN) || teamRules.includes(SENTINEL_END)) {
+    return null;
+  }
+  return `${SENTINEL_BEGIN}\n${teamRules}\n${SENTINEL_END}`;
+}
+
+/**
  * Inject the team rules block into `<consumerRoot>/CLAUDE.md`, fenced by
  * `SENTINEL_BEGIN` / `SENTINEL_END`. Content outside the fences is preserved
  * byte-for-byte.
@@ -216,9 +230,10 @@ function copySkills(consumerRoot: string): string[] {
  * - No file (or empty file) → create it containing only the block.
  * - Well-formed markers present → splice the fresh block between them.
  * - No markers → append the block after the existing content.
- * - Malformed markers (exactly one, or `END` before `BEGIN`) → warn and skip;
- *   the rich abort with a file/line pointer (FR-012) and the sentinel-injection
- *   guard (FR-014) are S-05.
+ * - Malformed markers (exactly one, or `END` before `BEGIN`) → warn with a
+ *   `CLAUDE.md:<line>` pointer at the orphaned marker and skip; no repair (FR-012).
+ * - Payload body carrying a boundary marker → refuse and skip via
+ *   {@link buildRulesBlock} (FR-014 sentinel-injection guard).
  *
  * A consumer file that uses CRLF endings keeps them: the result is written back
  * with the detected EOL style and is only rewritten when the *content* actually
@@ -231,7 +246,15 @@ function applyRulesBlock(consumerRoot: string): string[] {
   if (!fs.existsSync(sourceFile)) return [];
 
   const teamRules = fs.readFileSync(sourceFile, "utf8").trim();
-  const block = `${SENTINEL_BEGIN}\n${teamRules}\n${SENTINEL_END}`;
+  const block = buildRulesBlock(teamRules);
+  if (block === null) {
+    console.warn(
+      `${PACKAGE_NAME}: rules/CLAUDE.md: refusing to inject the team-rules ` +
+        `block — its content contains this package's boundary markers ` +
+        `(sentinel-injection guard); CLAUDE.md left untouched.`,
+    );
+    return [];
+  }
   const targetPath = path.join(consumerRoot, "CLAUDE.md");
 
   const existing = fs.existsSync(targetPath)

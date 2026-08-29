@@ -458,29 +458,29 @@ message on their next `install`; no state format changes.
 
 #### Automated
 
-- [x] 1.1 Build passes: `npm run build`
-- [x] 1.2 Type check passes: `npm run typecheck`
-- [x] 1.3 Full suite passes, incl. new `test/consumer.test.ts` and extended malformed-block assertions: `npm test`
-- [x] 1.4 `npm pack --dry-run --json` lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
+- [x] 1.1 Build passes: `npm run build` — cd20559
+- [x] 1.2 Type check passes: `npm run typecheck` — cd20559
+- [x] 1.3 Full suite passes, incl. new `test/consumer.test.ts` and extended malformed-block assertions: `npm test` — cd20559
+- [x] 1.4 `npm pack --dry-run --json` lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json` — cd20559
 
 #### Manual
 
-- [x] 1.5 Scratch repo: lone `BEGIN` on line 3 → `install` warns `CLAUDE.md:3` + "not repairing", file unchanged, rest of reconcile runs
-- [x] 1.6 Same file → `uninstall` logs the same `CLAUDE.md:3` pointer, file untouched
+- [x] 1.5 Scratch repo: lone `BEGIN` on line 3 → `install` warns `CLAUDE.md:3` + "not repairing", file unchanged, rest of reconcile runs — cd20559
+- [x] 1.6 Same file → `uninstall` logs the same `CLAUDE.md:3` pointer, file untouched — cd20559
 
 ### Phase 2: FR-014 — sentinel-injection guard
 
 #### Automated
 
-- [ ] 2.1 Build passes: `npm run build`
-- [ ] 2.2 Type check passes: `npm run typecheck`
-- [ ] 2.3 Full suite passes incl. new `buildRulesBlock` tests, existing tests unchanged: `npm test`
-- [ ] 2.4 `npm pack --dry-run --json` allowlist unchanged
+- [x] 2.1 Build passes: `npm run build` — <sha>
+- [x] 2.2 Type check passes: `npm run typecheck` — <sha>
+- [x] 2.3 Full suite passes incl. new `buildRulesBlock` tests, existing tests unchanged: `npm test` — <sha>
+- [x] 2.4 `npm pack --dry-run --json` allowlist unchanged — <sha>
 
 #### Manual
 
-- [ ] 2.5 `buildRulesBlock` with a payload containing a sentinel returns `null` (via built `dist`)
-- [ ] 2.6 PR records the poisoned-payload reasoning; shipped `rules/CLAUDE.md` confirmed clean
+- [x] 2.5 `buildRulesBlock` with a payload containing a sentinel returns `null` (via built `dist`) — <sha>
+- [x] 2.6 PR records the poisoned-payload reasoning; shipped `rules/CLAUDE.md` confirmed clean — <sha>
 
 ### Phase 3: FR-013 — corrupted-manifest candidate listing
 

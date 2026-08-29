@@ -158,8 +158,12 @@ wrapped so a failure downgrades to `console.warn` and never breaks
 same warnings.
 
 `vitest` bump to v4 (F-01 impl-review F1 follow-up) is **in scope for Phase 1**
-since Phase 1 first touches the test harness: run `npm audit fix --force`,
-confirm the suite still passes, commit the lockfile with Phase 1.
+since Phase 1 first touches the test harness. Land it as its **own commit at the
+start of Phase 1**, before the `src/install.ts` rewrite: `npm audit fix --force`
+(two-major `vitest` jump — check `vitest.config.ts` / `vitest/config` import
+still valid), confirm the existing suite passes, commit the lockfile + any config
+tweak alone so a harness regression stays bisectable. The Phase 1 feature commit
+lands on top.
 
 ## Critical Implementation Details
 
@@ -172,10 +176,12 @@ confirm the suite still passes, commit the lockfile with Phase 1.
 - **Symlink type & target.** Target is the absolute path to the payload skill dir
   under `node_modules` (`path.join(__dirname, "..", "skills", name)`). Type is
   `process.platform === "win32" ? "junction" : "dir"`. Detect an existing entry
-  we own with `fs.readlinkSync` (throws `EINVAL` for a real dir/file → treat as a
-  collision → warn + skip). A link that already resolves (`fs.realpathSync`) to
-  the current target is left as-is; a link resolving elsewhere is `rmSync`'d and
-  recreated.
+  we own with `fs.readlinkSync`: treat **any** throw (Windows may raise `EINVAL`,
+  `UNKNOWN`, or `EPERM` on a real dir) as "not our managed link" — then branch on
+  `fs.existsSync`: exists → collision (warn + skip, omit from `files`), absent →
+  create. When `readlinkSync` succeeds, resolve with `fs.realpathSync` inside its
+  own try/catch: resolves to the current target → leave as-is; resolves elsewhere
+  **or throws** (broken link, missing target) → `rmSync` + recreate.
 - **Rules block append vs replace.** Reuse the template's `applyRulesBlock`
   string logic (`indexOf(BEGIN)` / `indexOf(END)`; both present and `END > BEGIN`
   → splice; else `existing.trimEnd() + "\n\n" + block + "\n"`). Guard first: if
@@ -215,6 +221,11 @@ stays wrapped so nothing thrown escapes as an `npm install` failure.
 
 **Contract**:
 - `runInstall(): Promise<void>` — signature unchanged.
+- **Early return on null root.** `runInstall()` must call `findConsumerRoot()`
+  first and, when it returns `null` (toolkit checkout / no `PROJECT_ROOT` / not
+  under `node_modules`), print the existing one-line notice and return before any
+  `linkSkills` / `applyRulesBlock` / `ensureNpmrc` / `writeManifest` call. This
+  preserves the quiet no-op on local `npm install` in this repo.
 - New non-exported helpers, or exported for direct unit test as the suite needs:
   `linkSkills(consumerRoot: string): string[]` returns the consumer-root-relative
   POSIX paths of the links it created/kept; `writeManifest(consumerRoot: string,
@@ -243,34 +254,39 @@ a pre-existing real `.claude/skills/code-review/` directory is left intact, a
 warning is emitted, and it is absent from `files`. Restores `PROJECT_ROOT` and
 mocks `console` in `afterEach` (mirror `test/entrypoints.test.ts`).
 
-#### 3. Toolchain advisory follow-up
+#### 3. Toolchain advisory follow-up (separate commit, first in Phase 1)
 
-**File**: `package.json`, `package-lock.json`
+**File**: `package.json`, `package-lock.json`, possibly `vitest.config.ts`
 
 **Intent**: Clear the transitive `vitest`/esbuild dev-server advisories flagged in
-the F-01 impl-review (F1) now that Phase 1 first touches the harness.
+the F-01 impl-review (F1) now that Phase 1 first touches the harness. Land this
+**before** the `src/install.ts` rewrite as its own commit so a harness regression
+from the two-major `vitest` jump is bisectable.
 
-**Contract**: `npm audit fix --force` (accepts the `vitest` v4 major bump).
-`npm test` must still pass unchanged. Lockfile committed with this phase.
+**Contract**: `npm audit fix --force` (accepts the `vitest` v2→v4 major bump).
+Verify `vitest/config` import and `test.include` in `vitest.config.ts` still
+valid under v4; adjust if the config API changed. The **existing** suite
+(`npm test`) must still pass unchanged. Commit lockfile + `package.json` + any
+config tweak alone.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- [ ] Build passes: `npm run build`
-- [ ] Type check passes: `npm run typecheck`
-- [ ] Test suite passes (incl. new `test/install.test.ts`): `npm test`
-- [ ] `npm audit` reports 0 advisories (or documents any residual as
-      dev-only/unfixable)
-- [ ] `npm pack --dry-run` still lists only `dist/`, `skills/`, `rules/`, `bin/`,
-      `README.md`, `package.json`
+- Build passes: `npm run build`
+- Type check passes: `npm run typecheck`
+- Test suite passes (incl. new `test/install.test.ts`): `npm test`
+- `npm audit` reports 0 advisories (or documents any residual as
+  dev-only/unfixable)
+- `npm pack --dry-run` still lists only `dist/`, `skills/`, `rules/`, `bin/`,
+  `README.md`, `package.json`
 
 #### Manual Verification:
 
-- [ ] In a scratch consumer repo, `PROJECT_ROOT=<dir> node bin/ai-toolkit.js
-      install` creates `.claude/skills/code-review` as a link/junction resolving
-      into the package; re-running leaves `git status` clean
-- [ ] On Windows, the junction is created without Developer Mode / elevation
+- In a scratch consumer repo, `PROJECT_ROOT=<dir> node bin/ai-toolkit.js
+  install` creates `.claude/skills/code-review` as a link/junction resolving
+  into the package; re-running leaves `git status` clean
+- On Windows, the junction is created without Developer Mode / elevation
 
 **Implementation Note**: After Phase 1 automated verification passes, pause for
 manual confirmation before Phase 2.
@@ -330,16 +346,16 @@ absent from manifest `files`.
 
 #### Automated Verification:
 
-- [ ] Type check passes: `npm run typecheck`
-- [ ] Test suite passes: `npm test`
-- [ ] Grep check: after a two-run install in a temp dir, `CLAUDE.md` contains
-      exactly one `SENTINEL_BEGIN` and one `SENTINEL_END`
+- Type check passes: `npm run typecheck`
+- Test suite passes: `npm test`
+- Grep check: after a two-run install in a temp dir, `CLAUDE.md` contains
+  exactly one `SENTINEL_BEGIN` and one `SENTINEL_END`
 
 #### Manual Verification:
 
-- [ ] In a scratch consumer repo with a hand-written `CLAUDE.md`, install then
-      re-install: developer's own sections are untouched and the block appears
-      once; `git diff` on the second run is empty
+- In a scratch consumer repo with a hand-written `CLAUDE.md`, install then
+  re-install: developer's own sections are untouched and the block appears
+  once; `git diff` on the second run is empty
 
 **Implementation Note**: After Phase 2 automated verification passes, pause for
 manual confirmation before Phase 3.
@@ -399,31 +415,37 @@ unset → no `_authToken` line and `runInstall()` still resolves.
 
 **Intent**: Replace the "preview" framing with the real S-01 install flow: what
 lands where (`.claude/skills/<name>` symlinks, `CLAUDE.md` block, `.npmrc` line,
-`.claude/.ai-toolkit-manifest.json`), the `NODE_AUTH_TOKEN` behaviour, and the
-OQ-6 recommendation on whether to commit or ignore the manifest.
+`.claude/.ai-toolkit-manifest.json`), the `NODE_AUTH_TOKEN` behaviour, the OQ-6
+recommendation on the manifest, and a gitignore note for the managed skill links.
 
-**Contract**: Prose only. State the OQ-6 recommendation explicitly (commit the
-manifest so update/uninstall are reproducible across the team; add
-`.claude/.ai-toolkit-manifest.json` to version control).
+**Contract**: Prose only.
+- OQ-6: recommend committing `.claude/.ai-toolkit-manifest.json` so update /
+  uninstall are reproducible across the team.
+- Symlink-mode artifacts: recommend the consumer **gitignore the managed skill
+  entries** under `.claude/skills/` — in roaming mode they are regenerated from
+  `node_modules` on every install, and a committed symlink is fragile across
+  platforms (Windows without `core.symlinks` stores it as a text file holding the
+  target path). The `CLAUDE.md` block and the `.npmrc` line are real content and
+  are committed normally.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- [ ] Type check passes: `npm run typecheck`
-- [ ] Test suite passes: `npm test`
-- [ ] Build passes and `npm pack --dry-run` unchanged: `npm run build && npm pack --dry-run`
-- [ ] No-secret assertion in the suite passes (token value absent from `.npmrc`)
+- Type check passes: `npm run typecheck`
+- Test suite passes: `npm test`
+- Build passes and `npm pack --dry-run` unchanged: `npm run build && npm pack --dry-run`
+- No-secret assertion in the suite passes (token value absent from `.npmrc`)
 
 #### Manual Verification:
 
-- [ ] Real end-to-end on Windows: `npm pack`, install the tarball into a scratch
-      consumer repo (`npm install <tgz>`), confirm skills junction + `CLAUDE.md`
-      block + `.npmrc` mapping line + manifest; re-run `npm install` → tree clean
-- [ ] With `NODE_AUTH_TOKEN` exported, the `.npmrc` credential line is the
-      `${NODE_AUTH_TOKEN}` reference, and `git diff` shows no literal token
-- [ ] README consumer-setup section reads correctly and the OQ-6 recommendation
-      is unambiguous
+- Real end-to-end on Windows: `npm pack`, install the tarball into a scratch
+  consumer repo (`npm install <tgz>`), confirm skills junction + `CLAUDE.md`
+  block + `.npmrc` mapping line + manifest; re-run `npm install` → tree clean
+- With `NODE_AUTH_TOKEN` exported, the `.npmrc` credential line is the
+  `${NODE_AUTH_TOKEN}` reference, and `git diff` shows no literal token
+- README consumer-setup section reads correctly and the OQ-6 recommendation
+  is unambiguous
 
 **Implementation Note**: After Phase 3 automated verification passes and manual
 confirmation, S-01 is complete — S-02 / S-03 / S-04 / S-05 are unblocked.

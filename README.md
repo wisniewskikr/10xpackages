@@ -6,15 +6,17 @@ merge, and one-command install in any consumer repo.
 
 ## Status
 
-**Consumer install + update + uninstall (S-01, S-02, S-03).** `install` performs
-a real reconcile against the consumer project, including removing artifacts
-withdrawn since the last version and staying diff-free on CRLF repos.
+**Consumer install + update + uninstall + standalone copy (S-01, S-02, S-03,
+S-04).** `install` performs a real reconcile against the consumer project,
+including removing artifacts withdrawn since the last version and staying
+diff-free on CRLF repos. In a project with no `package.json` (or with
+`--copy`), it lays skills down as real file copies instead of symlinks.
 `uninstall` reads the install manifest and removes exactly what it recorded —
-skill links, the `CLAUDE.md` rules block, the `.npmrc` lines — leaving the
-consumer's own content untouched and the repo free of package traces.
+skill links or copied files, the `CLAUDE.md` rules block, the `.npmrc` lines —
+leaving the consumer's own content untouched and the repo free of package
+traces.
 
-Not yet implemented: copy-mode `npx` install for repos without a project
-manifest (S-04), and the rich unsafe-state refusals — corrupted-block abort with
+Not yet implemented: the rich unsafe-state refusals — corrupted-block abort with
 a file/line pointer, sentinel-injection guard, full skill-name-collision policy,
 corrupted-manifest candidate listing (S-05).
 
@@ -24,7 +26,7 @@ corrupted-manifest candidate listing (S-05).
 src/            TypeScript sources (build input)
   manifest.ts   sentinel markers + ToolkitManifest contract
   consumer.ts   shared consumer-root discovery + line-ending helpers
-  install.ts    installer — skill links, rules block, .npmrc line, manifest, withdrawn-artifact prune
+  install.ts    installer — skill links (roaming) or file copies (standalone), rules block, .npmrc line, manifest, withdrawn-artifact prune
   uninstall.ts  uninstaller — manifest-driven removal of every file install wrote
   cli.ts        `ai-toolkit` command dispatch
 bin/ai-toolkit.js   thin launcher -> dist/cli.js
@@ -115,6 +117,39 @@ If the manifest is missing or unparseable, uninstall makes **no changes** and
 warns rather than guessing what to delete. (Listing candidate files for manual
 removal in that case is planned for S-05.)
 
+### Standalone copy install
+
+For a repo that has **no `package.json`** — a Python, Go, or Rust project — run
+the installer directly:
+
+```
+npx @10xpackages/ai-toolkit install
+```
+
+from the project root. With no package manager to hook into, it switches to
+**copy mode**:
+
+- Each shipped skill is **copied** into `.claude/skills/<name>/…` as real
+  files, not symlinked into `node_modules` (there is none, and the `npx` cache
+  is transient). The manifest lists every copied file rather than the skill
+  directory.
+- The `CLAUDE.md` rules block is injected exactly as in roaming mode.
+- **No `.npmrc` line is written** — it is only meaningful with a package
+  manager. If a `package.json` *is* present (a Node repo where you passed
+  `--copy` deliberately), the registry line is still added.
+
+The target is the **current working directory**, so run the command from the
+project root. Re-running is diff-free (files are compared byte-for-byte and
+rewritten only on change). Because the copies do not follow `npm update`,
+refresh them by re-running `install`; withdrawn skills are pruned on that
+re-run via the same manifest diff as roaming mode.
+
+`npx @10xpackages/ai-toolkit uninstall` reverses a copy install from the
+manifest — removing the copied files, the `CLAUDE.md` block, the emptied
+`.claude/` directories, and the manifest — same as for a roaming install.
+
+Pass `--copy` to force copy mode in a repo that *does* have a `package.json`.
+
 ### What to commit
 
 - **Commit** `.claude/.ai-toolkit-manifest.json` — the update reconcile diffs the
@@ -136,5 +171,5 @@ local `npm login` — never a committed token.
 
 Product docs live in [`context/foundation/`](context/foundation/): `prd.md`,
 `roadmap.md`, `tech-stack.md`. Per-change plans are in `context/changes/` —
-`consumer-install-symlink/` (S-01), `consumer-update-and-reconcile/` (S-02), and
-`consumer-uninstall-clean/` (S-03).
+`consumer-install-symlink/` (S-01), `consumer-update-and-reconcile/` (S-02),
+`consumer-uninstall-clean/` (S-03), and `standalone-copy-install/` (S-04).

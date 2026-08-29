@@ -589,24 +589,24 @@ shapes).
 
 #### Automated
 
-- [x] 2.1 Build passes: `npm run build`
-- [x] 2.2 Type check passes: `npm run typecheck`
-- [x] 2.3 Test suite passes, incl. the new copy-mode uninstall/prune tests and every existing test unchanged: `npm test`
-- [x] 2.4 `npm pack --dry-run --json` allowlist unchanged
+- [x] 2.1 Build passes: `npm run build` — b385c0e
+- [x] 2.2 Type check passes: `npm run typecheck` — b385c0e
+- [x] 2.3 Test suite passes, incl. the new copy-mode uninstall/prune tests and every existing test unchanged: `npm test` — b385c0e
+- [x] 2.4 `npm pack --dry-run --json` allowlist unchanged — b385c0e
 
 #### Manual
 
-- [x] 2.5 Scratch repo with no `package.json`: `install --copy` + commit, then `uninstall` → `git status` clean, `git clean -nd` empty, `.claude/` gone
-- [x] 2.6 A hand-written `CLAUDE.md` section above the block survives uninstall; `git diff` shows only the block removal
+- [x] 2.5 Scratch repo with no `package.json`: `install --copy` + commit, then `uninstall` → `git status` clean, `git clean -nd` empty, `.claude/` gone — b385c0e
+- [x] 2.6 A hand-written `CLAUDE.md` section above the block survives uninstall; `git diff` shows only the block removal — b385c0e
 
 ### Phase 3: Documentation + roadmap
 
 #### Automated
 
-- [ ] 3.1 `npm run build && npm test` still green
-- [ ] 3.2 `npm pack --dry-run --json` allowlist unchanged
+- [x] 3.1 `npm run build && npm test` still green
+- [x] 3.2 `npm pack --dry-run --json` allowlist unchanged
 
 #### Manual
 
-- [ ] 3.3 README "Standalone copy install" section matches implemented behaviour; the `.npmrc`/`package.json` rule and "cwd is the target" caveat are unambiguous; S-05 scope boundary clear
-- [ ] 3.4 `## Status`, `## Layout`, `## Context` reflect S-04 implemented
+- [x] 3.3 README "Standalone copy install" section matches implemented behaviour; the `.npmrc`/`package.json` rule and "cwd is the target" caveat are unambiguous; S-05 scope boundary clear
+- [x] 3.4 `## Status`, `## Layout`, `## Context` reflect S-04 implemented

@@ -1,0 +1,48 @@
+# Consumer CI — pull the published @10xpackages/ai-toolkit version (S-07).
+#
+# Copy this into a CONSUMER repo as .github/workflows/sync-ai-toolkit.yml.
+# It is an example only — it does not run in the toolkit repo itself.
+#
+# Two one-time prerequisites in the consumer repo:
+#   1. Commit a project .npmrc containing exactly the registry-mapping line
+#      (this line, and only this line — never a token):
+#          @10xpackages:registry=https://npm.pkg.github.com
+#   2. Add "@10xpackages/ai-toolkit" to package.json "dependencies" (or
+#      "devDependencies") at the version you want.
+#
+# One-time org setting: the private package's "Manage Actions access" list
+# (Package -> Settings) must grant THIS consumer repo read access, otherwise the
+# run's GITHUB_TOKEN cannot fetch it.
+
+name: Sync AI Toolkit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC — pick up newly published versions
+
+permissions:
+  contents: read
+  packages: read # fetch the private package with the run's GITHUB_TOKEN
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Writes a job-scoped .npmrc with the auth line for the fetch. The
+      # installer's own conditional ${NODE_AUTH_TOKEN} line runs later, in
+      # postinstall — it does not bootstrap this fetch.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@10xpackages"
+
+      # `npm ci` installs the pinned version and triggers the package's
+      # postinstall -> `ai-toolkit install`, which reconciles .claude/skills/,
+      # the CLAUDE.md rules block, and the manifest.
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -70,12 +70,13 @@ describe("npm pack contents", () => {
     expect(paths).toContain(".github/workflows/publish-ai-toolkit.yml");
   });
 
-  it("excludes sources, tests, context docs, and .claude", () => {
+  it("excludes sources, tests, context docs, .claude, and the consumer-CI example", () => {
     for (const path of paths) {
       expect(path.startsWith("src/")).toBe(false);
       expect(path.startsWith("test/")).toBe(false);
       expect(path.startsWith("context/")).toBe(false);
       expect(path.startsWith(".claude/")).toBe(false);
+      expect(path.startsWith("examples/")).toBe(false);
     }
   });
 });

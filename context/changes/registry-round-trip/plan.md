@@ -450,32 +450,32 @@ unchanged (it never included `examples/`).
 
 #### Automated
 
-- [x] 1.1 Build succeeds: `npm run build`
-- [x] 1.2 Type checking passes: `npm run typecheck`
-- [x] 1.3 New test passes in isolation: `npx vitest run test/round-trip.test.ts`
-- [x] 1.4 Full suite passes: `npm test`
-- [x] 1.5 Lint/format clean (typecheck covers types; no separate lint step)
+- [x] 1.1 Build succeeds: `npm run build` — 177d09a
+- [x] 1.2 Type checking passes: `npm run typecheck` — 177d09a
+- [x] 1.3 New test passes in isolation: `npx vitest run test/round-trip.test.ts` — 177d09a
+- [x] 1.4 Full suite passes: `npm test` — 177d09a
+- [x] 1.5 Lint/format clean (typecheck covers types; no separate lint step) — 177d09a
 
 #### Manual
 
-- [x] 1.6 Clean-Windows `npx vitest run test/round-trip.test.ts` passes (junction, no Developer Mode)
-- [x] 1.7 Test run leaves no `ai-toolkit-roundtrip-*` temp dirs and no stray `.tgz`
-- [x] 1.8 Breaking the installer makes the round-trip test fail with a clear message
+- [x] 1.6 Clean-Windows `npx vitest run test/round-trip.test.ts` passes (junction, no Developer Mode) — 177d09a
+- [x] 1.7 Test run leaves no `ai-toolkit-roundtrip-*` temp dirs and no stray `.tgz` — 177d09a
+- [x] 1.8 Breaking the installer makes the round-trip test fail with a clear message — 177d09a
 
 ### Phase 2: Consumer CI example + documentation
 
 #### Automated
 
-- [ ] 2.1 `test/package-structure.test.ts` passes with the new `examples/` exclusion
-- [ ] 2.2 `examples/consumer-ci.yml` absent from `npm pack --dry-run --json`
-- [ ] 2.3 Full suite passes: `npm test`
-- [ ] 2.4 `npm run typecheck` passes
+- [x] 2.1 `test/package-structure.test.ts` passes with the new `examples/` exclusion
+- [x] 2.2 `examples/consumer-ci.yml` absent from `npm pack --dry-run --json`
+- [x] 2.3 Full suite passes: `npm test`
+- [x] 2.4 `npm run typecheck` passes
 
 #### Manual
 
-- [ ] 2.5 `examples/consumer-ci.yml` is valid YAML, paste-ready for a consumer
-- [ ] 2.6 README section is accurate against the example and S-01 installer behaviour
-- [ ] 2.7 A reader can enumerate every step to make a sibling repo a CI consumer from the README alone
+- [x] 2.5 `examples/consumer-ci.yml` is valid YAML, paste-ready for a consumer
+- [x] 2.6 README section is accurate against the example and S-01 installer behaviour
+- [x] 2.7 A reader can enumerate every step to make a sibling repo a CI consumer from the README alone
 
 ### Phase 3: Roadmap + README context sync
 

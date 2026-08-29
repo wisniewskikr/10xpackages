@@ -230,6 +230,44 @@ repository in GitHub Packages so the run's `GITHUB_TOKEN` can write to it. The
 published tarball itself contains `.github/workflows/publish-ai-toolkit.yml` (the
 pipeline definition ships with the package — US-01 AC).
 
+## Consumer CI — registry round trip (S-07)
+
+The publish half (S-06) and the install half (S-01) meet on a real published
+version in a **consumer repo's own CI**. `test/round-trip.test.ts` proves the
+contract against the packed artifact; this section is the deployment recipe for a
+sibling repo.
+
+**The opt-in is one committed line.** A consumer repo becomes a consumer by
+committing a project `.npmrc` with exactly the scope→registry mapping — the same
+line the installer would append, and nothing else:
+
+```
+@10xpackages:registry=https://npm.pkg.github.com
+```
+
+No token is ever committed. That line plus `@10xpackages/ai-toolkit` in
+`package.json` dependencies is the whole opt-in.
+
+**CI pulls it with an ephemeral credential.** Copy
+[`examples/consumer-ci.yml`](examples/consumer-ci.yml) into the consumer repo as
+a workflow. It uses `actions/setup-node` with `registry-url` + `scope` and runs
+`npm ci` with `NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}` under
+`permissions: packages: read`. No PAT, no stored secret.
+
+| Step | Who provides auth |
+| --- | --- |
+| **Fetch** the private package (`npm ci` resolving the dependency) | `actions/setup-node`'s job-scoped `.npmrc` + `NODE_AUTH_TOKEN` |
+| **Reconcile** (`postinstall` → `ai-toolkit install`) | runs *after* the fetch; writes its own conditional `${NODE_AUTH_TOKEN}` line only as a convenience for later installer re-runs — it does **not** bootstrap the fetch above |
+
+**One-time GitHub setting.** A private package is not readable by another repo's
+`GITHUB_TOKEN` by default. In the package's **Settings → Manage Actions access**,
+add the consumer repo with `Read`. Without it the run fails at `npm ci` with a
+403/404 on the package.
+
+**Local developers** skip all of this — `npm login` against
+`npm.pkg.github.com` once, and a missing `NODE_AUTH_TOKEN` never blocks an
+install. Registry mapping + auth on a clean Windows shell is still open (OQ-4).
+
 ## Context
 
 Product docs live in [`context/foundation/`](context/foundation/): `prd.md`,

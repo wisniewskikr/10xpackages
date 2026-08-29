@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 interface PackEntry {
@@ -24,8 +24,15 @@ const pkg = JSON.parse(
 ) as { files: string[] };
 
 describe("package.json files allowlist", () => {
-  it("ships dist, skills, rules, bin, and the README", () => {
-    for (const entry of ["dist/", "skills/", "rules/", "bin/", "README.md"]) {
+  it("ships dist, skills, rules, bin, the workflow, and the README", () => {
+    for (const entry of [
+      "dist/",
+      "skills/",
+      "rules/",
+      "bin/",
+      ".github/",
+      "README.md",
+    ]) {
       expect(pkg.files).toContain(entry);
     }
   });
@@ -59,11 +66,40 @@ describe("npm pack contents", () => {
     expect(paths).toContain("dist/cli.js");
   });
 
-  it("excludes sources, tests, and context docs", () => {
+  it("ships the publish pipeline definition (US-01 AC)", () => {
+    expect(paths).toContain(".github/workflows/publish-ai-toolkit.yml");
+  });
+
+  it("excludes sources, tests, context docs, and .claude", () => {
     for (const path of paths) {
       expect(path.startsWith("src/")).toBe(false);
       expect(path.startsWith("test/")).toBe(false);
       expect(path.startsWith("context/")).toBe(false);
+      expect(path.startsWith(".claude/")).toBe(false);
     }
   });
+});
+
+describe("shipped skills", () => {
+  const skillDirs = readdirSync("skills", { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+
+  it("has at least one skill", () => {
+    expect(skillDirs.length).toBeGreaterThan(0);
+  });
+
+  for (const dir of skillDirs) {
+    it(`skills/${dir}/SKILL.md has name + description frontmatter, name matches the directory`, () => {
+      const raw = readFileSync(`skills/${dir}/SKILL.md`, "utf8");
+      const fm = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw);
+      expect(fm, "SKILL.md must open with a YAML frontmatter block").not.toBeNull();
+      const body = fm![1];
+      const name = /^name:\s*(.+?)\s*$/m.exec(body)?.[1];
+      const description = /^description:\s*(.+?)\s*$/m.exec(body)?.[1];
+      expect(name, "frontmatter needs a non-empty name").toBeTruthy();
+      expect(description, "frontmatter needs a non-empty description").toBeTruthy();
+      expect(name).toBe(dir);
+    });
+  }
 });

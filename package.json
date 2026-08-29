@@ -15,6 +15,7 @@
     "skills/",
     "rules/",
     "bin/",
+    ".github/",
     "README.md"
   ],
   "bin": {

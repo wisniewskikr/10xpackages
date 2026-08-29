@@ -500,36 +500,36 @@ well under a minute.
 
 #### Automated
 
-- [x] 1.1 Workflow parses as valid YAML (`python -c "import yaml; yaml.safe_load(open('.github/workflows/publish-ai-toolkit.yml'))"`)
-- [x] 1.2 `grep -q "packages: write"` and `grep -q "contents: write"` on the workflow
-- [x] 1.3 `grep -q "NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}"` on the workflow
-- [x] 1.4 `grep -q "github.event_name == 'push'"` and `grep -q "fetch-tags: true"` on the workflow
-- [x] 1.5 `grep -q 'npm view "@10xpackages/ai-toolkit@$VERSION"'` on the workflow
-- [x] 1.6 No AWS/OIDC leakage: `! grep -qE "AWS_|id-token: write|codeartifact"` on the workflow
-- [x] 1.7 Repo green: `npm run typecheck && npm run build && npm test`
-- [x] 1.8 `npm pack --dry-run --json` allowlist unchanged (`dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`)
+- [x] 1.1 Workflow parses as valid YAML (`python -c "import yaml; yaml.safe_load(open('.github/workflows/publish-ai-toolkit.yml'))"`) — ef01b7c
+- [x] 1.2 `grep -q "packages: write"` and `grep -q "contents: write"` on the workflow — ef01b7c
+- [x] 1.3 `grep -q "NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}"` on the workflow — ef01b7c
+- [x] 1.4 `grep -q "github.event_name == 'push'"` and `grep -q "fetch-tags: true"` on the workflow — ef01b7c
+- [x] 1.5 `grep -q 'npm view "@10xpackages/ai-toolkit@$VERSION"'` on the workflow — ef01b7c
+- [x] 1.6 No AWS/OIDC leakage: `! grep -qE "AWS_|id-token: write|codeartifact"` on the workflow — ef01b7c
+- [x] 1.7 Repo green: `npm run typecheck && npm run build && npm test` — ef01b7c
+- [x] 1.8 `npm pack --dry-run --json` allowlist unchanged (`dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`) — ef01b7c
 
 #### Manual
 
-- [x] 1.9 Decision table walked against the gate script — first-release / no-op / bumped-publish / duplicate-red each hit the right branch
-- [x] 1.10 Throwaway PR: `validate` runs green, `publish` skipped (verified by `if: github.event_name == 'push'` on the publish job; deferred live run)
-- [x] 1.11 First merge to `main`: `publish` runs, `npm publish` succeeds, `v0.1.0` tag created, version in GitHub Packages (deferred to first real CI run)
-- [x] 1.12 Docs-only follow-up merge: `publish` green "nothing to publish", no new version (deferred to first real CI run)
-- [x] 1.13 `skills/` change without a version bump: `publish` fails red with the "bump version" message (deferred to first real CI run)
+- [x] 1.9 Decision table walked against the gate script — first-release / no-op / bumped-publish / duplicate-red each hit the right branch — ef01b7c
+- [x] 1.10 Throwaway PR: `validate` runs green, `publish` skipped (verified by `if: github.event_name == 'push'` on the publish job; deferred live run) — ef01b7c
+- [x] 1.11 First merge to `main`: `publish` runs, `npm publish` succeeds, `v0.1.0` tag created, version in GitHub Packages (deferred to first real CI run) — ef01b7c
+- [x] 1.12 Docs-only follow-up merge: `publish` green "nothing to publish", no new version (deferred to first real CI run) — ef01b7c
+- [x] 1.13 `skills/` change without a version bump: `publish` fails red with the "bump version" message (deferred to first real CI run) — ef01b7c
 
 ### Phase 2: Ship the pipeline definition in the tarball + lock package structure
 
 #### Automated
 
-- [ ] 2.1 `npm test` green incl. new `.github/` and SKILL.md-frontmatter assertions
-- [ ] 2.2 `npm run typecheck` clean
-- [ ] 2.3 `npm pack --dry-run --json` lists `.github/workflows/publish-ai-toolkit.yml`
-- [ ] 2.4 `npm pack --dry-run --json` still excludes `src/`, `test/`, `context/`, `.claude/`
-- [ ] 2.5 `package.json#files` includes `.github/` (`node -e` exit-code check)
+- [x] 2.1 `npm test` green incl. new `.github/` and SKILL.md-frontmatter assertions
+- [x] 2.2 `npm run typecheck` clean
+- [x] 2.3 `npm pack --dry-run --json` lists `.github/workflows/publish-ai-toolkit.yml`
+- [x] 2.4 `npm pack --dry-run --json` still excludes `src/`, `test/`, `context/`, `.claude/`
+- [x] 2.5 `package.json#files` includes `.github/` (`node -e` exit-code check)
 
 #### Manual
 
-- [ ] 2.6 `npm pack` + `tar -tf` shows `package/.github/workflows/publish-ai-toolkit.yml` and nothing else new
+- [x] 2.6 `npm pack` + `tar -tf` shows `package/.github/workflows/publish-ai-toolkit.yml` and nothing else new
 
 ### Phase 3: Docs + roadmap sync
 

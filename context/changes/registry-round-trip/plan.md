@@ -466,26 +466,26 @@ unchanged (it never included `examples/`).
 
 #### Automated
 
-- [x] 2.1 `test/package-structure.test.ts` passes with the new `examples/` exclusion
-- [x] 2.2 `examples/consumer-ci.yml` absent from `npm pack --dry-run --json`
-- [x] 2.3 Full suite passes: `npm test`
-- [x] 2.4 `npm run typecheck` passes
+- [x] 2.1 `test/package-structure.test.ts` passes with the new `examples/` exclusion — de2b1e1
+- [x] 2.2 `examples/consumer-ci.yml` absent from `npm pack --dry-run --json` — de2b1e1
+- [x] 2.3 Full suite passes: `npm test` — de2b1e1
+- [x] 2.4 `npm run typecheck` passes — de2b1e1
 
 #### Manual
 
-- [x] 2.5 `examples/consumer-ci.yml` is valid YAML, paste-ready for a consumer
-- [x] 2.6 README section is accurate against the example and S-01 installer behaviour
-- [x] 2.7 A reader can enumerate every step to make a sibling repo a CI consumer from the README alone
+- [x] 2.5 `examples/consumer-ci.yml` is valid YAML, paste-ready for a consumer — de2b1e1
+- [x] 2.6 README section is accurate against the example and S-01 installer behaviour — de2b1e1
+- [x] 2.7 A reader can enumerate every step to make a sibling repo a CI consumer from the README alone — de2b1e1
 
 ### Phase 3: Roadmap + README context sync
 
 #### Automated
 
-- [ ] 3.1 Full suite still green: `npm test`
-- [ ] 3.2 `git grep -n "registry-round-trip" README.md` shows the new entry
-- [ ] 3.3 Roadmap S-07 shows `in-progress` in both locations
+- [x] 3.1 Full suite still green: `npm test`
+- [x] 3.2 `git grep -n "registry-round-trip" README.md` shows the new entry
+- [x] 3.3 Roadmap S-07 shows `in-progress` in both locations
 
 #### Manual
 
-- [ ] 3.4 Roadmap "At a glance" and the S-07 body agree on `in-progress`
-- [ ] 3.5 README "Context" section lists all seven change folders
+- [x] 3.4 Roadmap "At a glance" and the S-07 body agree on `in-progress`
+- [x] 3.5 README "Context" section lists all seven change folders

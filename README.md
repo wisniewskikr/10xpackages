@@ -274,4 +274,5 @@ Product docs live in [`context/foundation/`](context/foundation/): `prd.md`,
 `roadmap.md`, `tech-stack.md`. Per-change plans are in `context/changes/` —
 `consumer-install-symlink/` (S-01), `consumer-update-and-reconcile/` (S-02),
 `consumer-uninstall-clean/` (S-03), `standalone-copy-install/` (S-04),
-`installer-safe-refusals/` (S-05), and `ci-publish-on-merge/` (S-06).
+`installer-safe-refusals/` (S-05), `ci-publish-on-merge/` (S-06), and
+`registry-round-trip/` (S-07).

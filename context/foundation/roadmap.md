@@ -34,7 +34,7 @@ Zespół w jednej organizacji GitHub zbudował warsztat pracy z AI — skille, r
 | S-02  | consumer-update-and-reconcile | zaktualizować / powtórzyć instalację i dostać nową treść bez śladu po wycofanych artefaktach, bez diffa | S-01          | US-02, FR-010                                   | in-progress |
 | S-03  | consumer-uninstall-clean    | zdeinstalować paczkę i zostać z czystym repo (zero pozostałości)                                          | S-01          | US-02, FR-011                                   | in-progress |
 | S-04  | standalone-copy-install     | zainstalować paczkę jednym poleceniem `npx` w repo bez manifestu projektu (Python/Go/Rust)               | S-01          | US-02, FR-005                                   | in-progress |
-| S-05  | installer-safe-refusals     | dostać czytelną odmowę zamiast cichej szkody przy uszkodzonym bloku reguł lub regule z podrzuconym znacznikiem | S-01     | US-02, FR-012, FR-014, FR-013                   | proposed |
+| S-05  | installer-safe-refusals     | dostać czytelną odmowę zamiast cichej szkody przy uszkodzonym bloku reguł lub regule z podrzuconym znacznikiem | S-01     | US-02, FR-012, FR-014, FR-013                   | planning |
 | S-06  | ci-publish-on-merge         | zmergować zmianę artefaktu do main i w jednym przebiegu CI opublikować nową wersję do rejestru            | F-01          | US-01, FR-001, FR-002, FR-003, FR-004           | proposed |
 | S-07  | registry-round-trip         | (repo-konsument) opt-in przez commit linii mapowania rejestru i pobrać opublikowaną wersję w swoim CI     | S-06, S-01    | US-01, US-02, FR-003, FR-005, FR-006            | proposed |
 
@@ -142,7 +142,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Pełna polityka kolizji nazw skilli — ostrzeżenie / prefiks scope / przerwanie (OQ-5). Owner: administrator paczki. Block: no (domyślne „ostrzeż i pomiń" z S-01 wystarcza do wydania; pełna decyzja zapada tutaj).
   - FR-013 pozostaje nice-to-have — realizowane tylko jeśli budżet 3 tygodni po godzinach pozwoli; inaczej przechodzi do Parked. Owner: administrator paczki. Block: no.
 - **Risk:** To slice guardraili „łagodnego obejścia" — rozszerza tę samą ścieżkę zapisu znaczników co S-01, stąd zależność. Przy blokerze `time`: FR-012 i FR-014 są must-have i nie mogą wypaść; FR-013 jest pierwszym kandydatem do cięcia.
-- **Status:** proposed
+- **Status:** planning
 
 ### S-06: Publikacja nowej wersji przez CI na merge do main
 

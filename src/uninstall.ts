@@ -32,6 +32,52 @@ const REGISTRY_LINE = `${PACKAGE_NAME.split("/")[0]}:registry=https://npm.pkg.gi
 const AUTH_LINE = "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}";
 
 /**
+ * Best-effort, read-only scan for artifacts this package plausibly installed.
+ * Used only when the manifest is corrupted and therefore can't enumerate itself
+ * (FR-013) — the consumer gets a candidate list to clean up by hand. Every `fs`
+ * failure yields nothing for that source rather than throwing; nothing here
+ * deletes.
+ *
+ * Returns consumer-root-relative POSIX paths, sorted and de-duplicated.
+ */
+function listUninstallCandidates(consumerRoot: string): string[] {
+  const found = new Set<string>();
+
+  try {
+    for (const entry of fs.readdirSync(path.join(consumerRoot, SKILLS_RELDIR))) {
+      found.add(`${SKILLS_POSIX_PREFIX}${entry}`);
+    }
+  } catch {
+    // no .claude/skills/ — nothing to add
+  }
+
+  try {
+    const claudeMd = fs.readFileSync(
+      path.join(consumerRoot, "CLAUDE.md"),
+      "utf8",
+    );
+    if (claudeMd.includes(SENTINEL_BEGIN)) found.add("CLAUDE.md");
+  } catch {
+    // absent or unreadable
+  }
+
+  try {
+    const npmrc = fs.readFileSync(path.join(consumerRoot, ".npmrc"), "utf8");
+    if (npmrc.includes(REGISTRY_LINE) || npmrc.includes(AUTH_LINE)) {
+      found.add(".npmrc");
+    }
+  } catch {
+    // absent or unreadable
+  }
+
+  if (fs.existsSync(path.join(consumerRoot, MANIFEST_RELPATH))) {
+    found.add(MANIFEST_RELPATH.split(path.sep).join("/"));
+  }
+
+  return [...found].sort();
+}
+
+/**
  * Strip the sentinel-fenced team-rules block from `raw` — the inverse of
  * `applyRulesBlock` in `install.ts`, and CRLF-agnostic.
  *
@@ -128,6 +174,14 @@ export async function runUninstall(): Promise<void> {
     } catch {
       console.warn(
         `${PACKAGE_NAME}: manifest unreadable — leaving all files in place.`,
+      );
+      const candidates = listUninstallCandidates(consumerRoot);
+      console.warn(
+        candidates.length > 0
+          ? `${PACKAGE_NAME}: nothing was removed. Candidates for manual ` +
+              `cleanup:\n${candidates.map((p) => `  - ${p}`).join("\n")}`
+          : `${PACKAGE_NAME}: nothing was removed and no leftover artifacts ` +
+              `were found to list.`,
       );
       return;
     }

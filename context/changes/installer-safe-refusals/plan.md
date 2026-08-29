@@ -472,28 +472,28 @@ message on their next `install`; no state format changes.
 
 #### Automated
 
-- [x] 2.1 Build passes: `npm run build` — <sha>
-- [x] 2.2 Type check passes: `npm run typecheck` — <sha>
-- [x] 2.3 Full suite passes incl. new `buildRulesBlock` tests, existing tests unchanged: `npm test` — <sha>
-- [x] 2.4 `npm pack --dry-run --json` allowlist unchanged — <sha>
+- [x] 2.1 Build passes: `npm run build` — bc00c77
+- [x] 2.2 Type check passes: `npm run typecheck` — bc00c77
+- [x] 2.3 Full suite passes incl. new `buildRulesBlock` tests, existing tests unchanged: `npm test` — bc00c77
+- [x] 2.4 `npm pack --dry-run --json` allowlist unchanged — bc00c77
 
 #### Manual
 
-- [x] 2.5 `buildRulesBlock` with a payload containing a sentinel returns `null` (via built `dist`) — <sha>
-- [x] 2.6 PR records the poisoned-payload reasoning; shipped `rules/CLAUDE.md` confirmed clean — <sha>
+- [x] 2.5 `buildRulesBlock` with a payload containing a sentinel returns `null` (via built `dist`) — bc00c77
+- [x] 2.6 PR records the poisoned-payload reasoning; shipped `rules/CLAUDE.md` confirmed clean — bc00c77
 
 ### Phase 3: FR-013 — corrupted-manifest candidate listing
 
 #### Automated
 
-- [ ] 3.1 Build passes: `npm run build`
-- [ ] 3.2 Type check passes: `npm run typecheck`
-- [ ] 3.3 Full suite passes incl. new corrupt-manifest listing tests, existing tests unchanged: `npm test`
-- [ ] 3.4 `npm pack --dry-run --json` allowlist unchanged
+- [x] 3.1 Build passes: `npm run build` — <sha>
+- [x] 3.2 Type check passes: `npm run typecheck` — <sha>
+- [x] 3.3 Full suite passes incl. new corrupt-manifest listing tests, existing tests unchanged: `npm test` — <sha>
+- [x] 3.4 `npm pack --dry-run --json` allowlist unchanged — <sha>
 
 #### Manual
 
-- [ ] 3.5 Scratch repo: full install, then corrupt the manifest → `uninstall` prints the candidate list matching disk and deletes nothing; `git status` clean
+- [x] 3.5 Scratch repo: full install, then corrupt the manifest → `uninstall` prints the candidate list matching disk and deletes nothing; `git status` clean — <sha>
 
 ### Phase 4: Documentation + OQ-5 ratification
 

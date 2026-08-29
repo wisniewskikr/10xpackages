@@ -183,6 +183,32 @@ describe("runUninstall — manifest-driven removal (S-03)", () => {
     expect(existsSync(join(consumerRoot, MANIFEST_REL))).toBe(true);
   });
 
+  it("lists manual-cleanup candidates on a corrupt manifest and deletes nothing", async () => {
+    const warn = vi.spyOn(console, "warn");
+    mkdirSync(join(consumerRoot, ".claude"), { recursive: true });
+    writeFileSync(join(consumerRoot, MANIFEST_REL), "{ not json");
+    seedLink(SKILL_LINK_POSIX);
+    writeFileSync(
+      join(consumerRoot, "CLAUDE.md"),
+      `# mine\n\n${BEGIN}\nrules\n${END}\n`,
+    );
+    writeFileSync(join(consumerRoot, ".npmrc"), `${REGISTRY_LINE}\n`);
+
+    await runUninstall();
+
+    const message = warn.mock.calls.flat().join("\n");
+    expect(message).toContain(SKILL_LINK_POSIX);
+    expect(message).toContain("CLAUDE.md");
+    expect(message).toContain(".npmrc");
+    expect(message).toContain(".claude/.ai-toolkit-manifest.json");
+
+    // Nothing was removed.
+    expect(existsSync(join(consumerRoot, SKILL_LINK_REL))).toBe(true);
+    expect(existsSync(join(consumerRoot, "CLAUDE.md"))).toBe(true);
+    expect(existsSync(join(consumerRoot, ".npmrc"))).toBe(true);
+    expect(existsSync(join(consumerRoot, MANIFEST_REL))).toBe(true);
+  });
+
   it("leaves a manifest skill path that is a real directory, and warns", async () => {
     const warn = vi.spyOn(console, "warn");
     seedManifest([".claude/skills/mine", SKILL_LINK_POSIX]);
@@ -203,7 +229,13 @@ describe("runUninstall — manifest-driven removal (S-03)", () => {
   });
 
   it("is a no-op when there is no manifest", async () => {
+    const warn = vi.spyOn(console, "warn");
+
     await expect(runUninstall()).resolves.toBeUndefined();
+
+    // No manifest at all = nothing was installed = no candidate list.
+    const message = warn.mock.calls.flat().join("\n");
+    expect(message).not.toContain("Candidates for manual cleanup");
   });
 
   it("keeps .claude/ when the consumer keeps their own files there", async () => {

@@ -101,3 +101,95 @@ describe("runInstall — skills + manifest (Phase 1)", () => {
     expect(readManifest().files).not.toContain(SKILL_LINK_POSIX);
   });
 });
+
+const BEGIN = "<!-- BEGIN @10xpackages/ai-toolkit -->";
+const END = "<!-- END @10xpackages/ai-toolkit -->";
+// A stable sentence from the shipped rules/CLAUDE.md payload.
+const RULES_MARKER = "Prefer the smallest change that satisfies the request";
+
+describe("runInstall — team rules block (Phase 2)", () => {
+  const originalProjectRoot = process.env.PROJECT_ROOT;
+  let consumerRoot: string;
+  let claudeMd: string;
+
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    consumerRoot = mkdtempSync(join(tmpdir(), "ai-toolkit-consumer-"));
+    process.env.PROJECT_ROOT = consumerRoot;
+    claudeMd = join(consumerRoot, "CLAUDE.md");
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(consumerRoot, { recursive: true, force: true });
+    if (originalProjectRoot === undefined) {
+      delete process.env.PROJECT_ROOT;
+    } else {
+      process.env.PROJECT_ROOT = originalProjectRoot;
+    }
+  });
+
+  function readManifest(): ToolkitManifest {
+    return JSON.parse(
+      readFileSync(join(consumerRoot, MANIFEST_REL), "utf8"),
+    ) as ToolkitManifest;
+  }
+
+  function countOccurrences(haystack: string, needle: string): number {
+    return haystack.split(needle).length - 1;
+  }
+
+  it("creates CLAUDE.md containing only the fenced block when none exists", async () => {
+    await runInstall();
+
+    const content = readFileSync(claudeMd, "utf8");
+    expect(content.startsWith(BEGIN)).toBe(true);
+    expect(content.trimEnd().endsWith(END)).toBe(true);
+    expect(content).toContain(RULES_MARKER);
+    expect(readManifest().files).toContain("CLAUDE.md");
+  });
+
+  it("appends the block below hand-written content and is byte-identical on re-run", async () => {
+    writeFileSync(claudeMd, "# My rules\n\nkeep this line\n");
+
+    await runInstall();
+    const afterFirst = readFileSync(claudeMd, "utf8");
+    expect(afterFirst).toContain("keep this line");
+    expect(afterFirst).toContain(BEGIN);
+    expect(countOccurrences(afterFirst, BEGIN)).toBe(1);
+
+    await runInstall();
+    expect(readFileSync(claudeMd, "utf8")).toBe(afterFirst);
+  });
+
+  it("replaces the block between existing markers, leaving surrounding text intact", async () => {
+    writeFileSync(
+      claudeMd,
+      `# Header keep me\n\n${BEGIN}\nOLD TEAM RULES\n${END}\n\n## Footer keep me too\n`,
+    );
+
+    await runInstall();
+
+    const content = readFileSync(claudeMd, "utf8");
+    expect(content).toContain("# Header keep me");
+    expect(content).toContain("## Footer keep me too");
+    expect(content).not.toContain("OLD TEAM RULES");
+    expect(content).toContain(RULES_MARKER);
+    expect(countOccurrences(content, BEGIN)).toBe(1);
+    expect(countOccurrences(content, END)).toBe(1);
+  });
+
+  it("skips a malformed block (single marker) without corrupting the file", async () => {
+    const warn = vi.spyOn(console, "warn");
+    const seeded = `# Mine\n\n${BEGIN}\nhalf a block, no END\n`;
+    writeFileSync(claudeMd, seeded);
+
+    await runInstall();
+
+    expect(readFileSync(claudeMd, "utf8")).toBe(seeded);
+    expect(countOccurrences(readFileSync(claudeMd, "utf8"), BEGIN)).toBe(1);
+    expect(warn).toHaveBeenCalled();
+    expect(readManifest().files).not.toContain("CLAUDE.md");
+  });
+});

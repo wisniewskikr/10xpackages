@@ -1,7 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { PACKAGE_NAME, PACKAGE_VERSION, type ToolkitManifest } from "./manifest";
+import {
+  PACKAGE_NAME,
+  PACKAGE_VERSION,
+  SENTINEL_BEGIN,
+  SENTINEL_END,
+  type ToolkitManifest,
+} from "./manifest";
 
 /** Consumer-root-relative location of the install manifest. */
 const MANIFEST_RELPATH = path.join(".claude", ".ai-toolkit-manifest.json");
@@ -107,6 +113,58 @@ function linkSkills(consumerRoot: string): string[] {
 }
 
 /**
+ * Inject the team rules block into `<consumerRoot>/CLAUDE.md`, fenced by
+ * `SENTINEL_BEGIN` / `SENTINEL_END`. Content outside the fences is preserved
+ * byte-for-byte.
+ *
+ * - No file (or empty file) → create it containing only the block.
+ * - Well-formed markers present → splice the fresh block between them.
+ * - No markers → append the block after the existing content.
+ * - Malformed markers (exactly one, or `END` before `BEGIN`) → warn and skip;
+ *   the rich abort with a file/line pointer (FR-012) and the sentinel-injection
+ *   guard (FR-014) are S-05.
+ *
+ * Returns `["CLAUDE.md"]` when the block is in place, `[]` when it skipped.
+ */
+function applyRulesBlock(consumerRoot: string): string[] {
+  const sourceFile = path.join(payloadDir("rules"), "CLAUDE.md");
+  if (!fs.existsSync(sourceFile)) return [];
+
+  const teamRules = fs.readFileSync(sourceFile, "utf8").trim();
+  const block = `${SENTINEL_BEGIN}\n${teamRules}\n${SENTINEL_END}`;
+  const targetPath = path.join(consumerRoot, "CLAUDE.md");
+
+  const existing = fs.existsSync(targetPath)
+    ? fs.readFileSync(targetPath, "utf8")
+    : null;
+
+  if (existing === null || existing.trim() === "") {
+    fs.writeFileSync(targetPath, block + "\n");
+    return ["CLAUDE.md"];
+  }
+
+  const begin = existing.indexOf(SENTINEL_BEGIN);
+  const end = existing.indexOf(SENTINEL_END);
+
+  if ((begin === -1) !== (end === -1) || (begin !== -1 && end < begin)) {
+    console.warn(
+      `${PACKAGE_NAME}: CLAUDE.md has a malformed team-rules block ` +
+        `(${begin === -1 ? "END" : "BEGIN"} marker without its pair) — ` +
+        `leaving the file untouched. Fix or remove the stray marker, then re-install.`,
+    );
+    return [];
+  }
+
+  const next =
+    begin !== -1
+      ? existing.slice(0, begin) + block + existing.slice(end + SENTINEL_END.length)
+      : existing.trimEnd() + "\n\n" + block + "\n";
+
+  if (next !== existing) fs.writeFileSync(targetPath, next);
+  return ["CLAUDE.md"];
+}
+
+/**
  * Write `<consumerRoot>/.claude/.ai-toolkit-manifest.json`, but only when the
  * recomputed manifest differs from any existing one — ignoring `installedAt`.
  * A no-op re-run therefore leaves the file (and its timestamp) byte-identical,
@@ -165,6 +223,7 @@ export async function runInstall(): Promise<void> {
 
     const files: string[] = [];
     files.push(...linkSkills(consumerRoot));
+    files.push(...applyRulesBlock(consumerRoot));
     writeManifest(consumerRoot, files);
 
     console.log(

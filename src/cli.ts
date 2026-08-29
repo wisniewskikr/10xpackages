@@ -6,11 +6,9 @@ import { runUninstall } from "./uninstall";
 const USAGE = `${PACKAGE_NAME} v${PACKAGE_VERSION}
 
 Usage:
-  ai-toolkit install     Lay out team skills and rules into this project (stub)
-  ai-toolkit uninstall   Remove files this package installed (stub)
+  ai-toolkit install     Reconcile team skills and rules into this project
+  ai-toolkit uninstall   Remove every file this package installed (reads the install manifest)
   ai-toolkit --help      Show this message
-
-Note: install/uninstall are skeleton stubs until change consumer-install-symlink lands.
 `;
 
 export async function run(argv: string[]): Promise<void> {

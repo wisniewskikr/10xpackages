@@ -497,30 +497,30 @@ manifest found" no-op.
 
 #### Automated
 
-- [x] 1.1 Build passes: `npm run build`
-- [x] 1.2 Type check passes: `npm run typecheck`
-- [x] 1.3 Full test suite passes unchanged: `npm test`
-- [x] 1.4 `npm pack --dry-run --json` still lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
+- [x] 1.1 Build passes: `npm run build` — f4d4f79
+- [x] 1.2 Type check passes: `npm run typecheck` — f4d4f79
+- [x] 1.3 Full test suite passes unchanged: `npm test` — f4d4f79
+- [x] 1.4 `npm pack --dry-run --json` still lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json` — f4d4f79
 
 #### Manual
 
-- [x] 1.5 `git diff` shows only a move (`install.ts` → `consumer.ts`) plus one new import line — no logic change
+- [x] 1.5 `git diff` shows only a move (`install.ts` → `consumer.ts`) plus one new import line — no logic change — f4d4f79
 
 ### Phase 2: Manifest-driven uninstall core + CLI
 
 #### Automated
 
-- [ ] 2.1 Build passes: `npm run build`
-- [ ] 2.2 Type check passes: `npm run typecheck`
-- [ ] 2.3 Test suite passes, incl. new `test/uninstall.test.ts` and the unchanged `test/entrypoints.test.ts` uninstall assertion: `npm test`
-- [ ] 2.4 `npm pack --dry-run --json` allowlist unchanged
+- [x] 2.1 Build passes: `npm run build`
+- [x] 2.2 Type check passes: `npm run typecheck`
+- [x] 2.3 Test suite passes, incl. new `test/uninstall.test.ts` and the unchanged `test/entrypoints.test.ts` uninstall assertion: `npm test`
+- [x] 2.4 `npm pack --dry-run --json` allowlist unchanged
 
 #### Manual
 
-- [ ] 2.5 Scratch consumer repo: install + commit, then `ai-toolkit uninstall` → `git status` clean, `git clean -nd` empty
-- [ ] 2.6 Hand-written `CLAUDE.md` content and an unrelated `.npmrc` entry survive uninstall; `git diff` shows only the block / line removals
-- [ ] 2.7 CRLF repo: install then uninstall → surviving lines keep CRLF, `git diff` shows only intended removals
-- [ ] 2.8 Second `ai-toolkit uninstall` prints "no manifest found, nothing to uninstall" and exits 0
+- [x] 2.5 Scratch consumer repo: install + commit, then `ai-toolkit uninstall` → `git status` clean, `git clean -nd` empty
+- [x] 2.6 Hand-written `CLAUDE.md` content and an unrelated `.npmrc` entry survive uninstall; `git diff` shows only the block / line removals
+- [x] 2.7 CRLF repo: install then uninstall → surviving lines keep CRLF, `git diff` shows only intended removals
+- [x] 2.8 Second `ai-toolkit uninstall` prints "no manifest found, nothing to uninstall" and exits 0
 
 ### Phase 3: Consumer uninstall documentation
 

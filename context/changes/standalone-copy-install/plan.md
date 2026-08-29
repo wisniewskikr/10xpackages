@@ -603,10 +603,10 @@ shapes).
 
 #### Automated
 
-- [x] 3.1 `npm run build && npm test` still green
-- [x] 3.2 `npm pack --dry-run --json` allowlist unchanged
+- [x] 3.1 `npm run build && npm test` still green — b05672b
+- [x] 3.2 `npm pack --dry-run --json` allowlist unchanged — b05672b
 
 #### Manual
 
-- [x] 3.3 README "Standalone copy install" section matches implemented behaviour; the `.npmrc`/`package.json` rule and "cwd is the target" caveat are unambiguous; S-05 scope boundary clear
-- [x] 3.4 `## Status`, `## Layout`, `## Context` reflect S-04 implemented
+- [x] 3.3 README "Standalone copy install" section matches implemented behaviour; the `.npmrc`/`package.json` rule and "cwd is the target" caveat are unambiguous; S-05 scope boundary clear — b05672b
+- [x] 3.4 `## Status`, `## Layout`, `## Context` reflect S-04 implemented — b05672b

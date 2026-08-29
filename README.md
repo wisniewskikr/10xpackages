@@ -6,23 +6,26 @@ merge, and one-command install in any consumer repo.
 
 ## Status
 
-**Consumer install + update reconcile (S-01, S-02).** `install` performs a real
-reconcile against the consumer project, including removing artifacts withdrawn
-since the last version and staying diff-free on CRLF repos. `uninstall` is still
-a stub (S-03).
+**Consumer install + update + uninstall (S-01, S-02, S-03).** `install` performs
+a real reconcile against the consumer project, including removing artifacts
+withdrawn since the last version and staying diff-free on CRLF repos.
+`uninstall` reads the install manifest and removes exactly what it recorded —
+skill links, the `CLAUDE.md` rules block, the `.npmrc` lines — leaving the
+consumer's own content untouched and the repo free of package traces.
 
-Not yet implemented: uninstall (S-03), copy-mode `npx` install for repos without
-a project manifest (S-04), and the rich unsafe-state refusals — corrupted-block
-abort with a file/line pointer, sentinel-injection guard, full
-skill-name-collision policy (S-05).
+Not yet implemented: copy-mode `npx` install for repos without a project
+manifest (S-04), and the rich unsafe-state refusals — corrupted-block abort with
+a file/line pointer, sentinel-injection guard, full skill-name-collision policy,
+corrupted-manifest candidate listing (S-05).
 
 ## Layout
 
 ```
 src/            TypeScript sources (build input)
   manifest.ts   sentinel markers + ToolkitManifest contract
+  consumer.ts   shared consumer-root discovery + line-ending helpers
   install.ts    installer — skill links, rules block, .npmrc line, manifest, withdrawn-artifact prune
-  uninstall.ts  uninstaller entrypoint (stub — S-03)
+  uninstall.ts  uninstaller — manifest-driven removal of every file install wrote
   cli.ts        `ai-toolkit` command dispatch
 bin/ai-toolkit.js   thin launcher -> dist/cli.js
 skills/         shipped skills, one dir per skill
@@ -82,7 +85,35 @@ install (`npm update`, or a plain re-install) re-runs the same reconcile:
 
 What an update does **not** touch: content outside the rules-block markers,
 unrelated `.npmrc` entries, and — on a downgrade or removal — the rules block and
-the `.npmrc` line themselves (removing those is `uninstall`'s job, S-03).
+the `.npmrc` line themselves (removing those is `uninstall`'s job).
+
+### Consumer uninstall
+
+Running `ai-toolkit uninstall` (or `npx @10xpackages/ai-toolkit uninstall`)
+reverses the install, using the committed manifest as the source of truth:
+
+- **Skill links** listed in the manifest are removed; a `.claude/skills/` left
+  empty is deleted, and so is `.claude/` if nothing else lives there.
+- **The `CLAUDE.md` rules block** between the sentinel markers is stripped;
+  text outside the markers is kept byte-for-byte. If the block was the only
+  content, the file is removed.
+- **The `.npmrc` lines the installer added** — the scope→registry mapping and,
+  when present, the `${NODE_AUTH_TOKEN}` credential reference — are removed;
+  unrelated entries stay. An emptied `.npmrc` is deleted.
+- **The manifest** (`.claude/.ai-toolkit-manifest.json`) is deleted last.
+
+Afterwards version control shows no package artifact. Uninstall is **idempotent**
+(a second run finds no manifest and does nothing) and **CRLF-safe** (it touches
+only the lines it owns).
+
+It is a deliberate command, **not** an npm lifecycle hook — npm does not run a
+dependency's scripts when the dependency is removed, so run `ai-toolkit
+uninstall` yourself before dropping `@10xpackages/ai-toolkit` from your manifest.
+It does not touch `package.json` or the lockfile.
+
+If the manifest is missing or unparseable, uninstall makes **no changes** and
+warns rather than guessing what to delete. (Listing candidate files for manual
+removal in that case is planned for S-05.)
 
 ### What to commit
 
@@ -105,4 +136,5 @@ local `npm login` — never a committed token.
 
 Product docs live in [`context/foundation/`](context/foundation/): `prd.md`,
 `roadmap.md`, `tech-stack.md`. Per-change plans are in `context/changes/` —
-`consumer-install-symlink/` (S-01) and `consumer-update-and-reconcile/` (S-02).
+`consumer-install-symlink/` (S-01), `consumer-update-and-reconcile/` (S-02), and
+`consumer-uninstall-clean/` (S-03).

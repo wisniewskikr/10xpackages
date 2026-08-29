@@ -510,26 +510,26 @@ manifest found" no-op.
 
 #### Automated
 
-- [x] 2.1 Build passes: `npm run build`
-- [x] 2.2 Type check passes: `npm run typecheck`
-- [x] 2.3 Test suite passes, incl. new `test/uninstall.test.ts` and the unchanged `test/entrypoints.test.ts` uninstall assertion: `npm test`
-- [x] 2.4 `npm pack --dry-run --json` allowlist unchanged
+- [x] 2.1 Build passes: `npm run build` — 2afd6e3
+- [x] 2.2 Type check passes: `npm run typecheck` — 2afd6e3
+- [x] 2.3 Test suite passes, incl. new `test/uninstall.test.ts` and the unchanged `test/entrypoints.test.ts` uninstall assertion: `npm test` — 2afd6e3
+- [x] 2.4 `npm pack --dry-run --json` allowlist unchanged — 2afd6e3
 
 #### Manual
 
-- [x] 2.5 Scratch consumer repo: install + commit, then `ai-toolkit uninstall` → `git status` clean, `git clean -nd` empty
-- [x] 2.6 Hand-written `CLAUDE.md` content and an unrelated `.npmrc` entry survive uninstall; `git diff` shows only the block / line removals
-- [x] 2.7 CRLF repo: install then uninstall → surviving lines keep CRLF, `git diff` shows only intended removals
-- [x] 2.8 Second `ai-toolkit uninstall` prints "no manifest found, nothing to uninstall" and exits 0
+- [x] 2.5 Scratch consumer repo: install + commit, then `ai-toolkit uninstall` → `git status` clean, `git clean -nd` empty — 2afd6e3
+- [x] 2.6 Hand-written `CLAUDE.md` content and an unrelated `.npmrc` entry survive uninstall; `git diff` shows only the block / line removals — 2afd6e3
+- [x] 2.7 CRLF repo: install then uninstall → surviving lines keep CRLF, `git diff` shows only intended removals — 2afd6e3
+- [x] 2.8 Second `ai-toolkit uninstall` prints "no manifest found, nothing to uninstall" and exits 0 — 2afd6e3
 
 ### Phase 3: Consumer uninstall documentation
 
 #### Automated
 
-- [ ] 3.1 `npm run build && npm test` still green
-- [ ] 3.2 `npm pack --dry-run --json` allowlist unchanged
+- [x] 3.1 `npm run build && npm test` still green
+- [x] 3.2 `npm pack --dry-run --json` allowlist unchanged
 
 #### Manual
 
-- [ ] 3.3 README "Consumer uninstall" section matches implemented behaviour; scope boundary with S-05 is unambiguous
-- [ ] 3.4 `## Status`, `## Layout`, `## Context` reflect S-03 implemented and the new `src/consumer.ts` module
+- [x] 3.3 README "Consumer uninstall" section matches implemented behaviour; scope boundary with S-05 is unambiguous
+- [x] 3.4 `## Status`, `## Layout`, `## Context` reflect S-03 implemented and the new `src/consumer.ts` module

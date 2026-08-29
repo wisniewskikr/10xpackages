@@ -598,4 +598,33 @@ describe("runInstall — standalone copy mode (S-04)", () => {
     expect(files).toContain(SKILL_LINK_POSIX);
     expect(files).not.toContain(`${SKILL_LINK_POSIX}/SKILL.md`);
   });
+
+  it("prunes a withdrawn copied file and its emptied directory on re-install", async () => {
+    const legacyRel = ".claude/skills/legacy/OLD.md";
+    const legacyAbs = join(consumerRoot, ...legacyRel.split("/"));
+    mkdirSync(join(legacyAbs, ".."), { recursive: true });
+    writeFileSync(legacyAbs, "stale\n");
+
+    const priorManifest: ToolkitManifest = {
+      package: PACKAGE_NAME,
+      version: "0.0.9",
+      tool: "claude-code",
+      installedAt: "2020-01-01T00:00:00.000Z",
+      files: [`${SKILL_LINK_POSIX}/SKILL.md`, legacyRel, "CLAUDE.md"].sort(),
+    };
+    mkdirSync(join(consumerRoot, ".claude"), { recursive: true });
+    writeFileSync(
+      join(consumerRoot, MANIFEST_REL),
+      JSON.stringify(priorManifest, null, 2) + "\n",
+    );
+
+    await runInstall({ copy: true });
+
+    expect(existsSync(legacyAbs)).toBe(false);
+    expect(existsSync(join(consumerRoot, ".claude", "skills", "legacy"))).toBe(
+      false,
+    );
+    expect(existsSync(join(consumerRoot, SKILL_LINK_REL, "SKILL.md"))).toBe(true);
+    expect(readManifest().files).not.toContain(legacyRel);
+  });
 });

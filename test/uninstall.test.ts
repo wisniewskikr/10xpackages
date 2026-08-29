@@ -216,3 +216,86 @@ describe("runUninstall — manifest-driven removal (S-03)", () => {
     expect(existsSync(join(consumerRoot, MANIFEST_REL))).toBe(false);
   });
 });
+
+describe("runUninstall — standalone copy mode (S-04)", () => {
+  const originalProjectRoot = process.env.PROJECT_ROOT;
+  const originalAuthToken = process.env.NODE_AUTH_TOKEN;
+  let consumerRoot: string;
+
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    consumerRoot = mkdtempSync(join(tmpdir(), "ai-toolkit-uninstall-"));
+    process.env.PROJECT_ROOT = consumerRoot;
+    delete process.env.NODE_AUTH_TOKEN;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(consumerRoot, { recursive: true, force: true });
+    if (originalProjectRoot === undefined) delete process.env.PROJECT_ROOT;
+    else process.env.PROJECT_ROOT = originalProjectRoot;
+    if (originalAuthToken === undefined) delete process.env.NODE_AUTH_TOKEN;
+    else process.env.NODE_AUTH_TOKEN = originalAuthToken;
+  });
+
+  function seedManifest(files: string[]): void {
+    const dir = join(consumerRoot, ".claude");
+    mkdirSync(dir, { recursive: true });
+    const manifest: ToolkitManifest = {
+      package: PACKAGE_NAME,
+      version: "0.1.0",
+      tool: "claude-code",
+      installedAt: "2026-01-01T00:00:00.000Z",
+      files: [...files].sort(),
+    };
+    writeFileSync(
+      join(dir, ".ai-toolkit-manifest.json"),
+      JSON.stringify(manifest, null, 2) + "\n",
+    );
+  }
+
+  it("round-trips: copy install then uninstall leaves no package trace", async () => {
+    await runInstall({ copy: true });
+    const skillFile = join(consumerRoot, SKILL_LINK_REL, "SKILL.md");
+    expect(existsSync(skillFile)).toBe(true);
+
+    await runUninstall();
+
+    expect(existsSync(join(consumerRoot, ".claude"))).toBe(false);
+    expect(existsSync(join(consumerRoot, MANIFEST_REL))).toBe(false);
+    expect(existsSync(join(consumerRoot, "CLAUDE.md"))).toBe(false);
+    await expect(runUninstall()).resolves.toBeUndefined();
+  });
+
+  it("keeps hand-written CLAUDE.md content after a copy round-trip", async () => {
+    const seed = "# Mine\n\nkeep this\n";
+    writeFileSync(join(consumerRoot, "CLAUDE.md"), seed);
+
+    await runInstall({ copy: true });
+    await runUninstall();
+
+    expect(readFileSync(join(consumerRoot, "CLAUDE.md"), "utf8")).toBe(seed);
+  });
+
+  it("removes a nested copied skill tree and prunes the emptied directories", async () => {
+    const nested = [
+      ".claude/skills/deep/a/b.md",
+      ".claude/skills/deep/c.md",
+    ];
+    for (const rel of nested) {
+      const abs = join(consumerRoot, ...rel.split("/"));
+      mkdirSync(join(abs, ".."), { recursive: true });
+      writeFileSync(abs, "x\n");
+    }
+    seedManifest(nested);
+
+    await runUninstall();
+
+    expect(existsSync(join(consumerRoot, ".claude", "skills", "deep"))).toBe(
+      false,
+    );
+    expect(existsSync(join(consumerRoot, ".claude"))).toBe(false);
+    expect(existsSync(join(consumerRoot, MANIFEST_REL))).toBe(false);
+  });
+});

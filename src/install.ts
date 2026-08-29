@@ -363,6 +363,15 @@ function pruneWithdrawn(consumerRoot: string, currentFiles: string[]): void {
     }
 
     const abs = path.join(consumerRoot, ...relPath.split("/"));
+
+    // A path deeper than `.claude/skills/<name>` is a copy-mode file this
+    // package wrote — delete it. The bare `.claude/skills/<name>` shape is a
+    // roaming-mode link, handled by the ownership probe below.
+    if (relPath.split("/").length > 3) {
+      if (fs.existsSync(abs)) fs.rmSync(abs, { force: true });
+      continue;
+    }
+
     let isLink = false;
     try {
       fs.readlinkSync(abs); // succeeds for a symlink/junction, even if broken
@@ -382,6 +391,7 @@ function pruneWithdrawn(consumerRoot: string, currentFiles: string[]): void {
   }
 
   const skillsDir = path.join(consumerRoot, SKILLS_RELDIR);
+  removeEmptyDirs(skillsDir); // prune per-skill dirs emptied by copy-mode removal
   try {
     if (fs.existsSync(skillsDir) && fs.readdirSync(skillsDir).length === 0) {
       fs.rmdirSync(skillsDir);

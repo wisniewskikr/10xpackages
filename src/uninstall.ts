@@ -11,6 +11,7 @@ import {
   MANIFEST_RELPATH,
   SKILLS_RELDIR,
   findConsumerRoot,
+  removeEmptyDirs,
   stripCr,
   toCrlf,
 } from "./consumer";
@@ -91,10 +92,11 @@ function removeNpmrcLines(raw: string): string {
 
 /**
  * Uninstaller entrypoint. Reads the install manifest and reverses exactly what
- * it recorded: removes owned skill links, strips the sentinel-fenced rules
- * block from `CLAUDE.md`, removes the two known `.npmrc` lines, deletes any file
- * left empty by that, cleans up emptied `.claude/skills/` and `.claude/`, then
- * deletes the manifest. Shared files keep every line the consumer wrote.
+ * it recorded: removes owned skill links (roaming mode) or copied skill files
+ * (standalone copy mode), strips the sentinel-fenced rules block from
+ * `CLAUDE.md`, removes the two known `.npmrc` lines, deletes any file left empty
+ * by that, cleans up emptied per-skill dirs, `.claude/skills/` and `.claude/`,
+ * then deletes the manifest. Shared files keep every line the consumer wrote.
  *
  * Never throws — an exception here must not blow up a consumer's tooling;
  * failures downgrade to `console.warn`, same contract as {@link runInstall}.
@@ -135,6 +137,17 @@ export async function runUninstall(): Promise<void> {
       const abs = path.join(consumerRoot, ...relPath.split("/"));
 
       if (relPath.startsWith(SKILLS_POSIX_PREFIX)) {
+        // A path deeper than `.claude/skills/<name>` is a file laid down by
+        // standalone copy mode — remove it. The bare `.claude/skills/<name>`
+        // shape is a roaming-mode link, handled by the ownership probe below.
+        if (relPath.split("/").length > 3) {
+          if (fs.existsSync(abs)) {
+            fs.rmSync(abs, { force: true });
+            removed++;
+          }
+          continue;
+        }
+
         let isLink = false;
         try {
           fs.readlinkSync(abs); // succeeds for a symlink/junction, even if broken
@@ -197,6 +210,9 @@ export async function runUninstall(): Promise<void> {
     // Manifest first among the trailing cleanup: every file it lists has now
     // been handled, so an interrupt past this point leaves nothing stranded.
     fs.rmSync(manifestPath, { force: true });
+
+    // Prune per-skill directories emptied by copy-mode file removal above.
+    removeEmptyDirs(path.join(consumerRoot, SKILLS_RELDIR));
 
     // Then remove managed directories we emptied — deepest first, guarded so a
     // directory the consumer still uses is left alone.

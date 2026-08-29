@@ -539,13 +539,13 @@ so local `npm install` stays a quiet no-op — no migration needed. The
 
 #### Automated
 
-- [x] 3.1 Type check passes: `npm run typecheck`
-- [x] 3.2 Test suite passes: `npm test`
-- [x] 3.3 Build passes and `npm pack --dry-run` unchanged: `npm run build && npm pack --dry-run`
-- [x] 3.4 No-secret assertion passes (token value absent from `.npmrc`)
+- [x] 3.1 Type check passes: `npm run typecheck` — 3b1d158
+- [x] 3.2 Test suite passes: `npm test` — 3b1d158
+- [x] 3.3 Build passes and `npm pack --dry-run` unchanged: `npm run build && npm pack --dry-run` — 3b1d158
+- [x] 3.4 No-secret assertion passes (token value absent from `.npmrc`) — 3b1d158
 
 #### Manual
 
-- [x] 3.5 Real end-to-end on Windows: tarball install into scratch repo → skills junction + `CLAUDE.md` block + `.npmrc` line + manifest; re-run `npm install` → tree clean
-- [x] 3.6 With `NODE_AUTH_TOKEN` exported, `.npmrc` credential line is the `${NODE_AUTH_TOKEN}` reference and `git diff` shows no literal token
-- [x] 3.7 README consumer-setup section reads correctly and the OQ-6 recommendation is unambiguous
+- [x] 3.5 Real end-to-end on Windows: tarball install into scratch repo → skills junction + `CLAUDE.md` block + `.npmrc` line + manifest; re-run `npm install` → tree clean — 3b1d158
+- [x] 3.6 With `NODE_AUTH_TOKEN` exported, `.npmrc` credential line is the `${NODE_AUTH_TOKEN}` reference and `git diff` shows no literal token — 3b1d158
+- [x] 3.7 README consumer-setup section reads correctly and the OQ-6 recommendation is unambiguous — 3b1d158

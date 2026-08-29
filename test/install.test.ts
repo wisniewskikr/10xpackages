@@ -3,9 +3,11 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -260,5 +262,144 @@ describe("runInstall — .npmrc registry line + conditional credential (Phase 3)
   it("omits the credential line and still completes when NODE_AUTH_TOKEN is unset", async () => {
     await expect(runInstall()).resolves.toBeUndefined();
     expect(readFileSync(npmrc, "utf8")).not.toContain("_authToken");
+  });
+});
+
+const LEGACY_LINK_REL = join(".claude", "skills", "legacy-thing");
+const LEGACY_LINK_POSIX = ".claude/skills/legacy-thing";
+
+describe("runInstall — withdrawn-artifact reconcile (S-02)", () => {
+  const originalProjectRoot = process.env.PROJECT_ROOT;
+  const originalAuthToken = process.env.NODE_AUTH_TOKEN;
+  let consumerRoot: string;
+
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    consumerRoot = mkdtempSync(join(tmpdir(), "ai-toolkit-consumer-"));
+    process.env.PROJECT_ROOT = consumerRoot;
+    delete process.env.NODE_AUTH_TOKEN;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(consumerRoot, { recursive: true, force: true });
+    if (originalProjectRoot === undefined) delete process.env.PROJECT_ROOT;
+    else process.env.PROJECT_ROOT = originalProjectRoot;
+    if (originalAuthToken === undefined) delete process.env.NODE_AUTH_TOKEN;
+    else process.env.NODE_AUTH_TOKEN = originalAuthToken;
+  });
+
+  function readManifest(): ToolkitManifest {
+    return JSON.parse(
+      readFileSync(join(consumerRoot, MANIFEST_REL), "utf8"),
+    ) as ToolkitManifest;
+  }
+
+  /** Seed a prior-version manifest listing `files`, as if an older install wrote it. */
+  function seedManifest(files: string[]): void {
+    const dir = join(consumerRoot, ".claude");
+    mkdirSync(dir, { recursive: true });
+    const manifest: ToolkitManifest = {
+      package: PACKAGE_NAME,
+      version: "0.0.9",
+      tool: "claude-code",
+      installedAt: "2020-01-01T00:00:00.000Z",
+      files: [...files].sort(),
+    };
+    writeFileSync(
+      join(dir, ".ai-toolkit-manifest.json"),
+      JSON.stringify(manifest, null, 2) + "\n",
+    );
+  }
+
+  /** Create `.claude/skills/legacy-thing` as a junction/symlink into the payload. */
+  function seedLegacyLink(): void {
+    const linkPath = join(consumerRoot, LEGACY_LINK_REL);
+    mkdirSync(join(consumerRoot, ".claude", "skills"), { recursive: true });
+    symlinkSync(
+      PAYLOAD_SKILL,
+      linkPath,
+      process.platform === "win32" ? "junction" : "dir",
+    );
+  }
+
+  it("removes a withdrawn skill link and keeps the shipped one", async () => {
+    seedManifest([SKILL_LINK_POSIX, LEGACY_LINK_POSIX, "CLAUDE.md", ".npmrc"]);
+    seedLegacyLink();
+
+    await runInstall();
+
+    expect(existsSync(join(consumerRoot, LEGACY_LINK_REL))).toBe(false);
+    const kept = join(consumerRoot, SKILL_LINK_REL);
+    expect(existsSync(kept)).toBe(true);
+    expect(realpathSync(kept)).toBe(realpathSync(PAYLOAD_SKILL));
+    expect(readManifest().files).not.toContain(LEGACY_LINK_POSIX);
+    expect(readManifest().files).toContain(SKILL_LINK_POSIX);
+  });
+
+  it("leaves a withdrawn entry that is now a real directory, and warns", async () => {
+    const warn = vi.spyOn(console, "warn");
+    seedManifest([SKILL_LINK_POSIX, LEGACY_LINK_POSIX]);
+    const realDir = join(consumerRoot, LEGACY_LINK_REL);
+    mkdirSync(realDir, { recursive: true });
+    writeFileSync(join(realDir, "SKILL.md"), "# consumer's own skill\n");
+
+    await runInstall();
+
+    expect(statSync(realDir).isDirectory()).toBe(true);
+    expect(readFileSync(join(realDir, "SKILL.md"), "utf8")).toBe(
+      "# consumer's own skill\n",
+    );
+    expect(warn).toHaveBeenCalled();
+    expect(readManifest().files).not.toContain(LEGACY_LINK_POSIX);
+  });
+
+  it("never removes CLAUDE.md even when it drops out of the current file set", async () => {
+    // A malformed sentinel block makes applyRulesBlock warn+skip, so "CLAUDE.md"
+    // is absent from currentFiles — it must still not be treated as withdrawn.
+    const claudeMd = join(consumerRoot, "CLAUDE.md");
+    const seeded = `# mine\n\n${BEGIN}\nhalf a block, no END\n`;
+    writeFileSync(claudeMd, seeded);
+    seedManifest([SKILL_LINK_POSIX, "CLAUDE.md"]);
+
+    await runInstall();
+
+    expect(existsSync(claudeMd)).toBe(true);
+    expect(readFileSync(claudeMd, "utf8")).toBe(seeded);
+  });
+
+  it("is a no-op when there is no prior manifest", async () => {
+    await expect(runInstall()).resolves.toBeUndefined();
+    expect(existsSync(join(consumerRoot, SKILL_LINK_REL))).toBe(true);
+  });
+
+  it("warns and still runs the forward reconcile when the prior manifest is corrupt", async () => {
+    const warn = vi.spyOn(console, "warn");
+    mkdirSync(join(consumerRoot, ".claude"), { recursive: true });
+    writeFileSync(
+      join(consumerRoot, MANIFEST_REL),
+      "{ this is not valid json",
+    );
+
+    await runInstall();
+
+    expect(warn).toHaveBeenCalled();
+    expect(existsSync(join(consumerRoot, SKILL_LINK_REL))).toBe(true);
+    const m = readManifest();
+    expect(m.package).toBe(PACKAGE_NAME);
+    expect(m.version).toBe(PACKAGE_VERSION);
+  });
+
+  it("keeps .claude/skills/ when a shipped skill still lives there after pruning", async () => {
+    seedManifest([SKILL_LINK_POSIX, LEGACY_LINK_POSIX]);
+    seedLegacyLink();
+
+    await runInstall();
+
+    const skillsDir = join(consumerRoot, ".claude", "skills");
+    expect(existsSync(skillsDir)).toBe(true);
+    expect(readdirSync(skillsDir)).toContain("code-review");
+    expect(readdirSync(skillsDir)).not.toContain("legacy-thing");
   });
 });

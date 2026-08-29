@@ -31,7 +31,7 @@ Zespół w jednej organizacji GitHub zbudował warsztat pracy z AI — skille, r
 | ----- | --------------------------- | ------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------- | -------- |
 | F-01  | package-skeleton            | (foundation) pakiet npm + build + testy + wewnętrzna struktura paczki gotowe do rozwijania               | —             | FR-001; Success Criteria (struktura paczki)     | in-progress |
 | S-01  | consumer-install-symlink    | zainstalować paczkę przez standardową instalację i dostać skille + blok reguł, z nietkniętymi dopiskami   | F-01          | US-02, FR-005, FR-006, FR-007, FR-008, FR-009   | in-progress |
-| S-02  | consumer-update-and-reconcile | zaktualizować / powtórzyć instalację i dostać nową treść bez śladu po wycofanych artefaktach, bez diffa | S-01          | US-02, FR-010                                   | planning |
+| S-02  | consumer-update-and-reconcile | zaktualizować / powtórzyć instalację i dostać nową treść bez śladu po wycofanych artefaktach, bez diffa | S-01          | US-02, FR-010                                   | in-progress |
 | S-03  | consumer-uninstall-clean    | zdeinstalować paczkę i zostać z czystym repo (zero pozostałości)                                          | S-01          | US-02, FR-011                                   | proposed |
 | S-04  | standalone-copy-install     | zainstalować paczkę jednym poleceniem `npx` w repo bez manifestu projektu (Python/Go/Rust)               | S-01          | US-02, FR-005                                   | proposed |
 | S-05  | installer-safe-refusals     | dostać czytelną odmowę zamiast cichej szkody przy uszkodzonym bloku reguł lub regule z podrzuconym znacznikiem | S-01     | US-02, FR-012, FR-014, FR-013                   | proposed |
@@ -102,7 +102,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Uzgodnienie przez porównanie manifestów — łatwo zostawić martwe artefakty po wycofanym skillu albo zdmuchnąć plik ruszony ręcznie przez konsumenta. Sekwencjonowany po S-01, bo potrzebuje działającej instalacji i ustalonego formatu manifestu. Idempotencja powtórnego przebiegu (NFR) jest weryfikowana właśnie tutaj.
-- **Status:** planning
+- **Status:** in-progress
 
 ### S-03: Czysta deinstalacja u konsumenta
 

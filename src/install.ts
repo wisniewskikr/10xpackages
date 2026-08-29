@@ -207,6 +207,88 @@ function ensureNpmrc(consumerRoot: string): string[] {
 }
 
 /**
+ * Remove artifacts the previous install recorded that this install no longer
+ * produces — the withdrawn-artifact reconcile (FR-010). The signal is the set
+ * difference `previousManifest.files − currentFiles`.
+ *
+ * Only skill links this package provably owns are deleted:
+ * - `CLAUDE.md` / `.npmrc` are shared content — an update never removes them
+ *   (that is uninstall's job, S-03); they are skipped silently.
+ * - A stale entry that is still a symlink/junction (even a broken one) is ours
+ *   to remove.
+ * - A stale entry the consumer has replaced with a real directory/file is left
+ *   in place with a warning — same posture as the collision skip in
+ *   {@link linkSkills}.
+ * - An entry outside `.claude/skills/` is unexpected; warn and leave it.
+ *
+ * After pruning, an emptied `.claude/skills/` directory is removed so a
+ * withdrawn artifact leaves no trace.
+ *
+ * No previous manifest → nothing to reconcile against (first install). An
+ * unreadable manifest → skip the prune with a warning rather than guess what to
+ * delete; the forward reconcile and the manifest rewrite still happen.
+ */
+function pruneWithdrawn(consumerRoot: string, currentFiles: string[]): void {
+  const manifestPath = path.join(consumerRoot, MANIFEST_RELPATH);
+  if (!fs.existsSync(manifestPath)) return;
+
+  let previousFiles: string[];
+  try {
+    const previous = JSON.parse(
+      fs.readFileSync(manifestPath, "utf8"),
+    ) as ToolkitManifest;
+    previousFiles = Array.isArray(previous.files) ? previous.files : [];
+  } catch {
+    console.warn(
+      `${PACKAGE_NAME}: previous manifest unreadable — skipping ` +
+        `withdrawn-artifact cleanup.`,
+    );
+    return;
+  }
+
+  const current = new Set(currentFiles);
+  for (const relPath of previousFiles) {
+    if (current.has(relPath)) continue;
+    if (relPath === "CLAUDE.md" || relPath === ".npmrc") continue;
+
+    if (!relPath.startsWith(".claude/skills/")) {
+      console.warn(
+        `${PACKAGE_NAME}: manifest lists a withdrawn entry outside ` +
+          `.claude/skills/ (${relPath}) — leaving it in place.`,
+      );
+      continue;
+    }
+
+    const abs = path.join(consumerRoot, ...relPath.split("/"));
+    let isLink = false;
+    try {
+      fs.readlinkSync(abs); // succeeds for a symlink/junction, even if broken
+      isLink = true;
+    } catch {
+      isLink = false;
+    }
+
+    if (isLink) {
+      fs.rmSync(abs, { recursive: true, force: true });
+    } else if (fs.existsSync(abs)) {
+      console.warn(
+        `${PACKAGE_NAME}: withdrawn skill "${relPath}" is now a real ` +
+          `directory not managed by this package — leaving it in place.`,
+      );
+    }
+  }
+
+  const skillsDir = path.join(consumerRoot, SKILLS_RELDIR);
+  try {
+    if (fs.existsSync(skillsDir) && fs.readdirSync(skillsDir).length === 0) {
+      fs.rmdirSync(skillsDir);
+    }
+  } catch {
+    // Non-empty or racing with another process — nothing to clean up.
+  }
+}
+
+/**
  * Write `<consumerRoot>/.claude/.ai-toolkit-manifest.json`, but only when the
  * recomputed manifest differs from any existing one — ignoring `installedAt`.
  * A no-op re-run therefore leaves the file (and its timestamp) byte-identical,
@@ -248,10 +330,11 @@ function writeManifest(consumerRoot: string, files: string[]): void {
 
 /**
  * Installer entrypoint. Reconciles the consumer's AI-tool artifacts with this
- * package version: lay out skill links, (Phase 2) inject the sentinel-fenced
- * rules block, (Phase 3) ensure the registry-mapping line, then write the
- * manifest. Never throws — an exception here must not fail a consumer's
- * `npm install`; failures downgrade to `console.warn`.
+ * package version: lay out skill links, inject the sentinel-fenced rules block,
+ * ensure the registry-mapping line, remove artifacts withdrawn since the last
+ * install (manifest diff), then write the manifest. Never throws — an exception
+ * here must not fail a consumer's `npm install`; failures downgrade to
+ * `console.warn`.
  */
 export async function runInstall(): Promise<void> {
   try {
@@ -267,6 +350,7 @@ export async function runInstall(): Promise<void> {
     files.push(...linkSkills(consumerRoot));
     files.push(...applyRulesBlock(consumerRoot));
     files.push(...ensureNpmrc(consumerRoot));
+    pruneWithdrawn(consumerRoot, files);
     writeManifest(consumerRoot, files);
 
     console.log(

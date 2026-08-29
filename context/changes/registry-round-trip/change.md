@@ -1,7 +1,7 @@
 ---
 change_id: registry-round-trip
 title: Registry round trip
-status: planned
+status: implementing
 created: 2026-08-29
 updated: 2026-08-29
 archived_at: null

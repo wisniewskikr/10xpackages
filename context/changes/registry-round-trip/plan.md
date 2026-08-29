@@ -450,17 +450,17 @@ unchanged (it never included `examples/`).
 
 #### Automated
 
-- [ ] 1.1 Build succeeds: `npm run build`
-- [ ] 1.2 Type checking passes: `npm run typecheck`
-- [ ] 1.3 New test passes in isolation: `npx vitest run test/round-trip.test.ts`
-- [ ] 1.4 Full suite passes: `npm test`
-- [ ] 1.5 Lint/format clean (typecheck covers types; no separate lint step)
+- [x] 1.1 Build succeeds: `npm run build`
+- [x] 1.2 Type checking passes: `npm run typecheck`
+- [x] 1.3 New test passes in isolation: `npx vitest run test/round-trip.test.ts`
+- [x] 1.4 Full suite passes: `npm test`
+- [x] 1.5 Lint/format clean (typecheck covers types; no separate lint step)
 
 #### Manual
 
-- [ ] 1.6 Clean-Windows `npx vitest run test/round-trip.test.ts` passes (junction, no Developer Mode)
-- [ ] 1.7 Test run leaves no `ai-toolkit-roundtrip-*` temp dirs and no stray `.tgz`
-- [ ] 1.8 Breaking the installer makes the round-trip test fail with a clear message
+- [x] 1.6 Clean-Windows `npx vitest run test/round-trip.test.ts` passes (junction, no Developer Mode)
+- [x] 1.7 Test run leaves no `ai-toolkit-roundtrip-*` temp dirs and no stray `.tgz`
+- [x] 1.8 Breaking the installer makes the round-trip test fail with a clear message
 
 ### Phase 2: Consumer CI example + documentation
 

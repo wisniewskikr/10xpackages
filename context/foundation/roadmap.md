@@ -36,7 +36,7 @@ Zespół w jednej organizacji GitHub zbudował warsztat pracy z AI — skille, r
 | S-04  | standalone-copy-install     | zainstalować paczkę jednym poleceniem `npx` w repo bez manifestu projektu (Python/Go/Rust)               | S-01          | US-02, FR-005                                   | in-progress |
 | S-05  | installer-safe-refusals     | dostać czytelną odmowę zamiast cichej szkody przy uszkodzonym bloku reguł lub regule z podrzuconym znacznikiem | S-01     | US-02, FR-012, FR-014, FR-013                   | in-progress |
 | S-06  | ci-publish-on-merge         | zmergować zmianę artefaktu do main i w jednym przebiegu CI opublikować nową wersję do rejestru            | F-01          | US-01, FR-001, FR-002, FR-003, FR-004           | in-progress |
-| S-07  | registry-round-trip         | (repo-konsument) opt-in przez commit linii mapowania rejestru i pobrać opublikowaną wersję w swoim CI     | S-06, S-01    | US-01, US-02, FR-003, FR-005, FR-006            | planning |
+| S-07  | registry-round-trip         | (repo-konsument) opt-in przez commit linii mapowania rejestru i pobrać opublikowaną wersję w swoim CI     | S-06, S-01    | US-01, US-02, FR-003, FR-005, FR-006            | in-progress |
 
 ## Streams
 
@@ -169,7 +169,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Mapowanie rejestru i uwierzytelnianie w CI konsumenta na czystym Windows (OQ-4). Owner: administrator paczki. Block: no.
 - **Risk:** Domyka główne kryterium sukcesu — pierwsze miejsce, gdzie strona publikująca i konsumująca spotykają się na realnym rejestrze i realnym poświadczeniu CI konsumenta (ścieżka auth nietykana przez FR-005/006, które są lokalne). Sekwencjonowany na końcu, bo potrzebuje obu stron gotowych. Ryzyko: uprawnienia organizacji i widoczność pakietu prywatnego dla repo-konsumenta.
-- **Status:** planning
+- **Status:** in-progress
 
 ## Backlog Handoff
 

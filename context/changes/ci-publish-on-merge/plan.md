@@ -535,12 +535,12 @@ well under a minute.
 
 #### Automated
 
-- [x] 3.1 `npm test` green
-- [x] 3.2 `npm pack --dry-run --json` unchanged from Phase 2
-- [x] 3.3 `grep -q "CI publish on merge" README.md`
-- [x] 3.4 S-06 block of `context/foundation/roadmap.md` shows `Status:` `in-progress`
+- [x] 3.1 `npm test` green — 19e3f06
+- [x] 3.2 `npm pack --dry-run --json` unchanged from Phase 2 — 19e3f06
+- [x] 3.3 `grep -q "CI publish on merge" README.md` — 19e3f06
+- [x] 3.4 S-06 block of `context/foundation/roadmap.md` shows `Status:` `in-progress` — 19e3f06
 
 #### Manual
 
-- [x] 3.5 README section matches the workflow's decision table, permissions, and token
-- [x] 3.6 Roadmap "At a glance" row and S-06 body agree on `in-progress`
+- [x] 3.5 README section matches the workflow's decision table, permissions, and token — 19e3f06
+- [x] 3.6 Roadmap "At a glance" row and S-06 body agree on `in-progress` — 19e3f06

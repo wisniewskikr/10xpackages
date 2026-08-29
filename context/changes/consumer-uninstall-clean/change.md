@@ -1,7 +1,7 @@
 ---
 change_id: consumer-uninstall-clean
 title: Consumer uninstall clean
-status: new
+status: planned
 created: 2026-08-29
 updated: 2026-08-29
 archived_at: null

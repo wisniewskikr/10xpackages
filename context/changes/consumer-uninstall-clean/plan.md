@@ -526,10 +526,10 @@ manifest found" no-op.
 
 #### Automated
 
-- [x] 3.1 `npm run build && npm test` still green
-- [x] 3.2 `npm pack --dry-run --json` allowlist unchanged
+- [x] 3.1 `npm run build && npm test` still green — 18deb54
+- [x] 3.2 `npm pack --dry-run --json` allowlist unchanged — 18deb54
 
 #### Manual
 
-- [x] 3.3 README "Consumer uninstall" section matches implemented behaviour; scope boundary with S-05 is unambiguous
-- [x] 3.4 `## Status`, `## Layout`, `## Context` reflect S-03 implemented and the new `src/consumer.ts` module
+- [x] 3.3 README "Consumer uninstall" section matches implemented behaviour; scope boundary with S-05 is unambiguous — 18deb54
+- [x] 3.4 `## Status`, `## Layout`, `## Context` reflect S-03 implemented and the new `src/consumer.ts` module — 18deb54

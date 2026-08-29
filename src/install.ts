@@ -11,7 +11,8 @@ import {
 import {
   MANIFEST_RELPATH,
   SKILLS_RELDIR,
-  findConsumerRoot,
+  removeEmptyDirs,
+  resolveTarget,
   stripCr,
   toCrlf,
   toManifestPath,
@@ -90,6 +91,120 @@ function linkSkills(consumerRoot: string): string[] {
   }
 
   return linked;
+}
+
+/** `files[]` of the manifest already on disk, or `[]` when absent/unreadable. */
+function readPriorManifestFiles(consumerRoot: string): string[] {
+  try {
+    const previous = JSON.parse(
+      fs.readFileSync(path.join(consumerRoot, MANIFEST_RELPATH), "utf8"),
+    ) as ToolkitManifest;
+    return Array.isArray(previous.files) ? previous.files : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Paths of every file under `dir`, relative to `dir` (native separators). */
+function listFilesRecursive(dir: string, base: string = dir): string[] {
+  const out: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listFilesRecursive(abs, base));
+    else out.push(path.relative(base, abs));
+  }
+  return out;
+}
+
+/**
+ * Content-diffing directory sync: make `dstDir` hold exactly the files of
+ * `srcDir`. A file is written only when it is missing or its bytes differ, an
+ * orphaned destination file (no source counterpart) is removed, and directories
+ * emptied by that are pruned. A clean re-run therefore writes nothing.
+ *
+ * Returns the absolute paths of the files now under `dstDir`.
+ */
+function syncDir(srcDir: string, dstDir: string): string[] {
+  const srcRelPaths = listFilesRecursive(srcDir);
+  const srcPosix = new Set(
+    srcRelPaths.map((rel) => rel.split(path.sep).join("/")),
+  );
+
+  for (const rel of srcRelPaths) {
+    const from = path.join(srcDir, rel);
+    const to = path.join(dstDir, rel);
+    const bytes = fs.readFileSync(from);
+
+    let write = true;
+    try {
+      write = !fs.readFileSync(to).equals(bytes);
+    } catch {
+      write = true; // destination missing
+    }
+    if (write) {
+      fs.mkdirSync(path.dirname(to), { recursive: true });
+      fs.writeFileSync(to, bytes);
+    }
+  }
+
+  if (fs.existsSync(dstDir)) {
+    for (const rel of listFilesRecursive(dstDir)) {
+      if (!srcPosix.has(rel.split(path.sep).join("/"))) {
+        fs.rmSync(path.join(dstDir, rel), { force: true });
+      }
+    }
+    removeEmptyDirs(dstDir);
+  }
+
+  return srcRelPaths.map((rel) => path.join(dstDir, rel));
+}
+
+/**
+ * Standalone copy mode: copy each shipped skill directory into
+ * `<consumerRoot>/.claude/skills/<name>/…` as **real files** — no symlink into
+ * `node_modules` (which may not exist, or is an ephemeral `npx` cache). Uses
+ * {@link syncDir}, so a re-run with unchanged payload writes nothing.
+ *
+ * Collision: if `.claude/skills/<name>` exists and the *prior* manifest claims
+ * no file beneath it, it is the consumer's own — warn and skip (full collision
+ * policy is S-05). Otherwise it is ours (or brand new) and is synced.
+ *
+ * Returns the consumer-root-relative POSIX paths of every copied file.
+ */
+function copySkills(consumerRoot: string): string[] {
+  const sourceRoot = payloadDir("skills");
+  if (!fs.existsSync(sourceRoot)) return [];
+
+  const priorFiles = readPriorManifestFiles(consumerRoot);
+  const skillsRelPosix = SKILLS_RELDIR.split(path.sep).join("/");
+  const copied: string[] = [];
+
+  for (const entry of fs.readdirSync(sourceRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+
+    const name = entry.name;
+    const srcDir = path.join(sourceRoot, name);
+    const dstDir = path.join(consumerRoot, SKILLS_RELDIR, name);
+    const relPrefix = `${skillsRelPosix}/${name}/`;
+
+    if (
+      fs.existsSync(dstDir) &&
+      !priorFiles.some((file) => file.startsWith(relPrefix))
+    ) {
+      console.warn(
+        `${PACKAGE_NAME}: skipping skill "${name}" — ` +
+          `${toManifestPath(consumerRoot, dstDir)} already exists and is not ` +
+          `managed by this package.`,
+      );
+      continue;
+    }
+
+    for (const abs of syncDir(srcDir, dstDir)) {
+      copied.push(toManifestPath(consumerRoot, abs));
+    }
+  }
+
+  return copied;
 }
 
 /**
@@ -318,31 +433,39 @@ function writeManifest(consumerRoot: string, files: string[]): void {
 
 /**
  * Installer entrypoint. Reconciles the consumer's AI-tool artifacts with this
- * package version: lay out skill links, inject the sentinel-fenced rules block,
- * ensure the registry-mapping line, remove artifacts withdrawn since the last
- * install (manifest diff), then write the manifest. Never throws — an exception
- * here must not fail a consumer's `npm install`; failures downgrade to
- * `console.warn`.
+ * package version: lay out skills (symlink/junction in roaming mode, real copies
+ * in standalone `--copy` mode), inject the sentinel-fenced rules block, ensure
+ * the registry-mapping line (roaming mode, or copy mode when a `package.json` is
+ * present), remove artifacts withdrawn since the last install (manifest diff),
+ * then write the manifest. `options.copy` forces copy mode; otherwise
+ * {@link resolveTarget} picks the mode. Never throws — an exception here must
+ * not fail a consumer's `npm install`; failures downgrade to `console.warn`.
  */
-export async function runInstall(): Promise<void> {
+export async function runInstall(
+  options: { copy?: boolean } = {},
+): Promise<void> {
   try {
-    const consumerRoot = findConsumerRoot();
-    if (consumerRoot === null) {
+    const target = resolveTarget(options);
+    if (target === null) {
       console.log(
         `${PACKAGE_NAME}: running from a toolkit checkout, nothing to install.`,
       );
       return;
     }
+    const { root, mode } = target;
 
     const files: string[] = [];
-    files.push(...linkSkills(consumerRoot));
-    files.push(...applyRulesBlock(consumerRoot));
-    files.push(...ensureNpmrc(consumerRoot));
-    pruneWithdrawn(consumerRoot, files);
-    writeManifest(consumerRoot, files);
+    files.push(...(mode === "copy" ? copySkills(root) : linkSkills(root)));
+    files.push(...applyRulesBlock(root));
+    if (mode === "link" || fs.existsSync(path.join(root, "package.json"))) {
+      files.push(...ensureNpmrc(root));
+    }
+    pruneWithdrawn(root, files);
+    writeManifest(root, files);
 
     console.log(
-      `${PACKAGE_NAME}: installed ${files.length} file(s) into ${consumerRoot}`,
+      `${PACKAGE_NAME}: ${mode === "copy" ? "copied" : "installed"} ` +
+        `${files.length} file(s) into ${root}`,
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

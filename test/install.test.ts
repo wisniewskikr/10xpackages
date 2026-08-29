@@ -1,5 +1,6 @@
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -486,5 +487,115 @@ describe("runInstall — CRLF consumer repos (S-02)", () => {
 
     await runInstall();
     expect(readFileSync(npmrc, "utf8")).toBe(afterFirst);
+  });
+});
+
+describe("runInstall — standalone copy mode (S-04)", () => {
+  const originalProjectRoot = process.env.PROJECT_ROOT;
+  const originalAuthToken = process.env.NODE_AUTH_TOKEN;
+  let consumerRoot: string;
+
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    consumerRoot = mkdtempSync(join(tmpdir(), "ai-toolkit-consumer-"));
+    process.env.PROJECT_ROOT = consumerRoot;
+    delete process.env.NODE_AUTH_TOKEN;
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(consumerRoot, { recursive: true, force: true });
+    if (originalProjectRoot === undefined) delete process.env.PROJECT_ROOT;
+    else process.env.PROJECT_ROOT = originalProjectRoot;
+    if (originalAuthToken === undefined) delete process.env.NODE_AUTH_TOKEN;
+    else process.env.NODE_AUTH_TOKEN = originalAuthToken;
+  });
+
+  function readManifest(): ToolkitManifest {
+    return JSON.parse(
+      readFileSync(join(consumerRoot, MANIFEST_REL), "utf8"),
+    ) as ToolkitManifest;
+  }
+
+  it("copies each skill as real files (not symlinks) equal to the payload", async () => {
+    await runInstall({ copy: true });
+
+    const skillDir = join(consumerRoot, SKILL_LINK_REL);
+    const skillFile = join(skillDir, "SKILL.md");
+    expect(existsSync(skillFile)).toBe(true);
+    expect(lstatSync(skillDir).isSymbolicLink()).toBe(false);
+    expect(lstatSync(skillFile).isSymbolicLink()).toBe(false);
+    expect(readFileSync(skillFile)).toEqual(
+      readFileSync(join(PAYLOAD_SKILL, "SKILL.md")),
+    );
+  });
+
+  it("records per-file manifest entries, sorted", async () => {
+    await runInstall({ copy: true });
+
+    const files = readManifest().files;
+    expect(files).toContain(`${SKILL_LINK_POSIX}/SKILL.md`);
+    expect(files).not.toContain(SKILL_LINK_POSIX); // bare dir = link-mode shape
+    expect(files).toContain("CLAUDE.md");
+    expect([...files]).toEqual([...files].sort());
+  });
+
+  it("is idempotent — a second copy run rewrites nothing", async () => {
+    await runInstall({ copy: true });
+    const skillFile = join(consumerRoot, SKILL_LINK_REL, "SKILL.md");
+    const manifestPath = join(consumerRoot, MANIFEST_REL);
+    const skillBytes = readFileSync(skillFile);
+    const manifestBytes = readFileSync(manifestPath, "utf8");
+    const skillMtime = statSync(skillFile).mtimeMs;
+
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    await runInstall({ copy: true });
+
+    expect(readFileSync(skillFile)).toEqual(skillBytes);
+    expect(readFileSync(manifestPath, "utf8")).toBe(manifestBytes);
+    expect(statSync(skillFile).mtimeMs).toBe(skillMtime);
+  });
+
+  it("skips a pre-existing unmanaged skill directory and warns", async () => {
+    const warn = vi.spyOn(console, "warn");
+    const mine = join(consumerRoot, SKILL_LINK_REL, "SKILL.md");
+    mkdirSync(join(consumerRoot, SKILL_LINK_REL), { recursive: true });
+    writeFileSync(mine, "# mine\n");
+
+    await runInstall({ copy: true });
+
+    expect(readFileSync(mine, "utf8")).toBe("# mine\n");
+    expect(warn).toHaveBeenCalled();
+    expect(readManifest().files).not.toContain(`${SKILL_LINK_POSIX}/SKILL.md`);
+  });
+
+  it("writes no .npmrc when the project has no package.json", async () => {
+    await runInstall({ copy: true });
+
+    expect(existsSync(join(consumerRoot, ".npmrc"))).toBe(false);
+    expect(readManifest().files).not.toContain(".npmrc");
+  });
+
+  it("still writes .npmrc when a package.json is present", async () => {
+    writeFileSync(
+      join(consumerRoot, "package.json"),
+      '{ "name": "consumer-app" }\n',
+    );
+
+    await runInstall({ copy: true });
+
+    expect(readFileSync(join(consumerRoot, ".npmrc"), "utf8")).toContain(
+      REGISTRY_LINE,
+    );
+    expect(readManifest().files).toContain(".npmrc");
+  });
+
+  it("leaves the default (non-copy) run producing the dir-level link entry", async () => {
+    await runInstall();
+
+    const files = readManifest().files;
+    expect(files).toContain(SKILL_LINK_POSIX);
+    expect(files).not.toContain(`${SKILL_LINK_POSIX}/SKILL.md`);
   });
 });

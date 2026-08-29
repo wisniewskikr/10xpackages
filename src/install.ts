@@ -165,6 +165,48 @@ function applyRulesBlock(consumerRoot: string): string[] {
 }
 
 /**
+ * Ensure the consumer's project `.npmrc` carries the scope→registry mapping
+ * line, and — only when `NODE_AUTH_TOKEN` is set at install time — a credential
+ * line that *references* the env var (npm expands it at read time, so no secret
+ * is ever written to the file). Existing lines are never parsed or reordered;
+ * a line is appended only if no line already equals it (trimmed).
+ *
+ * Returns `[".npmrc"]` when the file exists or was created, else `[]`.
+ */
+function ensureNpmrc(consumerRoot: string): string[] {
+  const npmrcPath = path.join(consumerRoot, ".npmrc");
+  const scope = PACKAGE_NAME.split("/")[0]; // "@10xpackages"
+  const registryLine = `${scope}:registry=https://npm.pkg.github.com`;
+  // Literal text — `${NODE_AUTH_TOKEN}` is NOT interpolated here (double quotes),
+  // it is the reference npm resolves from the environment when it reads .npmrc.
+  const authLine = "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}";
+
+  const existedBefore = fs.existsSync(npmrcPath);
+  const original = existedBefore ? fs.readFileSync(npmrcPath, "utf8") : "";
+  const lines = original
+    .replace(/\n+$/, "")
+    .split("\n")
+    .filter((line, _i, all) => !(all.length === 1 && line === ""));
+
+  const present = (line: string): boolean =>
+    lines.some((existing) => existing.trim() === line);
+
+  const wanted = [registryLine];
+  if (process.env.NODE_AUTH_TOKEN) wanted.push(authLine);
+
+  let changed = false;
+  for (const line of wanted) {
+    if (!present(line)) {
+      lines.push(line);
+      changed = true;
+    }
+  }
+
+  if (changed) fs.writeFileSync(npmrcPath, lines.join("\n") + "\n");
+  return existedBefore || changed ? [".npmrc"] : [];
+}
+
+/**
  * Write `<consumerRoot>/.claude/.ai-toolkit-manifest.json`, but only when the
  * recomputed manifest differs from any existing one — ignoring `installedAt`.
  * A no-op re-run therefore leaves the file (and its timestamp) byte-identical,
@@ -224,6 +266,7 @@ export async function runInstall(): Promise<void> {
     const files: string[] = [];
     files.push(...linkSkills(consumerRoot));
     files.push(...applyRulesBlock(consumerRoot));
+    files.push(...ensureNpmrc(consumerRoot));
     writeManifest(consumerRoot, files);
 
     console.log(

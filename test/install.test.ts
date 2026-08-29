@@ -193,3 +193,72 @@ describe("runInstall — team rules block (Phase 2)", () => {
     expect(readManifest().files).not.toContain("CLAUDE.md");
   });
 });
+
+const REGISTRY_LINE = "@10xpackages:registry=https://npm.pkg.github.com";
+const AUTH_LINE = "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}";
+
+describe("runInstall — .npmrc registry line + conditional credential (Phase 3)", () => {
+  const originalProjectRoot = process.env.PROJECT_ROOT;
+  const originalAuthToken = process.env.NODE_AUTH_TOKEN;
+  let consumerRoot: string;
+  let npmrc: string;
+
+  beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    consumerRoot = mkdtempSync(join(tmpdir(), "ai-toolkit-consumer-"));
+    process.env.PROJECT_ROOT = consumerRoot;
+    delete process.env.NODE_AUTH_TOKEN;
+    npmrc = join(consumerRoot, ".npmrc");
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(consumerRoot, { recursive: true, force: true });
+    if (originalProjectRoot === undefined) delete process.env.PROJECT_ROOT;
+    else process.env.PROJECT_ROOT = originalProjectRoot;
+    if (originalAuthToken === undefined) delete process.env.NODE_AUTH_TOKEN;
+    else process.env.NODE_AUTH_TOKEN = originalAuthToken;
+  });
+
+  function readManifest(): ToolkitManifest {
+    return JSON.parse(
+      readFileSync(join(consumerRoot, MANIFEST_REL), "utf8"),
+    ) as ToolkitManifest;
+  }
+
+  it("creates .npmrc with the scope→registry line when none exists", async () => {
+    await runInstall();
+
+    expect(readFileSync(npmrc, "utf8")).toBe(REGISTRY_LINE + "\n");
+    expect(readManifest().files).toContain(".npmrc");
+  });
+
+  it("appends only the missing line, leaving an unrelated registry entry intact", async () => {
+    writeFileSync(npmrc, "@other:registry=https://example.com/\n");
+
+    await runInstall();
+
+    const content = readFileSync(npmrc, "utf8");
+    expect(content).toContain("@other:registry=https://example.com/");
+    expect(content).toContain(REGISTRY_LINE);
+
+    await runInstall();
+    expect(readFileSync(npmrc, "utf8")).toBe(content); // no duplicate on re-run
+  });
+
+  it("writes the ${NODE_AUTH_TOKEN} reference — never the token value — when the env var is set", async () => {
+    process.env.NODE_AUTH_TOKEN = "s3cr3t-sentinel-value";
+
+    await runInstall();
+
+    const content = readFileSync(npmrc, "utf8");
+    expect(content).toContain(AUTH_LINE);
+    expect(content).not.toContain("s3cr3t-sentinel-value");
+  });
+
+  it("omits the credential line and still completes when NODE_AUTH_TOKEN is unset", async () => {
+    await expect(runInstall()).resolves.toBeUndefined();
+    expect(readFileSync(npmrc, "utf8")).not.toContain("_authToken");
+  });
+});

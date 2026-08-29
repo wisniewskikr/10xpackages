@@ -527,25 +527,25 @@ so local `npm install` stays a quiet no-op — no migration needed. The
 
 #### Automated
 
-- [x] 2.1 Type check passes: `npm run typecheck`
-- [x] 2.2 Test suite passes: `npm test`
-- [x] 2.3 Grep check: after a two-run install, `CLAUDE.md` has exactly one `SENTINEL_BEGIN` and one `SENTINEL_END`
+- [x] 2.1 Type check passes: `npm run typecheck` — d499570
+- [x] 2.2 Test suite passes: `npm test` — d499570
+- [x] 2.3 Grep check: after a two-run install, `CLAUDE.md` has exactly one `SENTINEL_BEGIN` and one `SENTINEL_END` — d499570
 
 #### Manual
 
-- [x] 2.4 Scratch repo with a hand-written `CLAUDE.md`: install then re-install leaves the developer's sections untouched, block appears once, second-run `git diff` empty
+- [x] 2.4 Scratch repo with a hand-written `CLAUDE.md`: install then re-install leaves the developer's sections untouched, block appears once, second-run `git diff` empty — d499570
 
 ### Phase 3: Registry `.npmrc` line + conditional credential
 
 #### Automated
 
-- [ ] 3.1 Type check passes: `npm run typecheck`
-- [ ] 3.2 Test suite passes: `npm test`
-- [ ] 3.3 Build passes and `npm pack --dry-run` unchanged: `npm run build && npm pack --dry-run`
-- [ ] 3.4 No-secret assertion passes (token value absent from `.npmrc`)
+- [x] 3.1 Type check passes: `npm run typecheck`
+- [x] 3.2 Test suite passes: `npm test`
+- [x] 3.3 Build passes and `npm pack --dry-run` unchanged: `npm run build && npm pack --dry-run`
+- [x] 3.4 No-secret assertion passes (token value absent from `.npmrc`)
 
 #### Manual
 
-- [ ] 3.5 Real end-to-end on Windows: tarball install into scratch repo → skills junction + `CLAUDE.md` block + `.npmrc` line + manifest; re-run `npm install` → tree clean
-- [ ] 3.6 With `NODE_AUTH_TOKEN` exported, `.npmrc` credential line is the `${NODE_AUTH_TOKEN}` reference and `git diff` shows no literal token
-- [ ] 3.7 README consumer-setup section reads correctly and the OQ-6 recommendation is unambiguous
+- [x] 3.5 Real end-to-end on Windows: tarball install into scratch repo → skills junction + `CLAUDE.md` block + `.npmrc` line + manifest; re-run `npm install` → tree clean
+- [x] 3.6 With `NODE_AUTH_TOKEN` exported, `.npmrc` credential line is the `${NODE_AUTH_TOKEN}` reference and `git diff` shows no literal token
+- [x] 3.7 README consumer-setup section reads correctly and the OQ-6 recommendation is unambiguous

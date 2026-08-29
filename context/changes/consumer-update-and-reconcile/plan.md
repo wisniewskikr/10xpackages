@@ -457,10 +457,10 @@ ran S-01) simply gets a first install with an empty prune.
 
 #### Automated
 
-- [x] 3.1 `npm run build && npm test` still green
-- [x] 3.2 `npm pack --dry-run` unchanged
+- [x] 3.1 `npm run build && npm test` still green — b8d83e8
+- [x] 3.2 `npm pack --dry-run` unchanged — b8d83e8
 
 #### Manual
 
-- [x] 3.3 README "Consumer update" section reads correctly and the scope boundary with uninstall (S-03) is unambiguous
-- [x] 3.4 `## Status` paragraph reflects S-02 implemented
+- [x] 3.3 README "Consumer update" section reads correctly and the scope boundary with uninstall (S-03) is unambiguous — b8d83e8
+- [x] 3.4 `## Status` paragraph reflects S-02 implemented — b8d83e8

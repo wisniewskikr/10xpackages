@@ -481,11 +481,11 @@ unchanged (it never included `examples/`).
 
 #### Automated
 
-- [x] 3.1 Full suite still green: `npm test`
-- [x] 3.2 `git grep -n "registry-round-trip" README.md` shows the new entry
-- [x] 3.3 Roadmap S-07 shows `in-progress` in both locations
+- [x] 3.1 Full suite still green: `npm test` — f26b74d
+- [x] 3.2 `git grep -n "registry-round-trip" README.md` shows the new entry — f26b74d
+- [x] 3.3 Roadmap S-07 shows `in-progress` in both locations — f26b74d
 
 #### Manual
 
-- [x] 3.4 Roadmap "At a glance" and the S-07 body agree on `in-progress`
-- [x] 3.5 README "Context" section lists all seven change folders
+- [x] 3.4 Roadmap "At a glance" and the S-07 body agree on `in-progress` — f26b74d
+- [x] 3.5 README "Context" section lists all seven change folders — f26b74d

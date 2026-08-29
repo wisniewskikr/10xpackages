@@ -1,0 +1,111 @@
+name: Publish AI Toolkit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write # create and push the vX.Y.Z release tag
+  packages: write # publish to GitHub Packages
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@10xpackages"
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+      - run: npm pack --dry-run
+
+  publish:
+    needs: validate
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@10xpackages"
+
+      - run: npm ci
+
+      - name: Decide whether to publish
+        id: gate
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          LAST_TAG=$(git tag --list 'v*' --sort=-v:refname | head -n1 || true)
+          if [ -z "$LAST_TAG" ]; then
+            echo "No prior release tag — first publish."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Last release tag: $LAST_TAG"
+
+          CHANGED=$(git diff --name-only "$LAST_TAG"..HEAD -- \
+            src bin skills rules README.md package.json tsconfig.json tsup.config.ts .github/workflows)
+
+          if npm view "@10xpackages/ai-toolkit@$VERSION" version >/dev/null 2>&1; then
+            EXISTS=yes
+          else
+            EXISTS=no
+          fi
+
+          if [ -z "$CHANGED" ]; then
+            echo "No packaged-file changes since $LAST_TAG — nothing to publish."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Packaged files changed since $LAST_TAG:"
+          echo "$CHANGED"
+
+          if [ "$EXISTS" = yes ]; then
+            echo "::error::Packaged files changed since $LAST_TAG but version $VERSION is already published. Bump \"version\" in package.json before merging."
+            exit 1
+          fi
+
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        if: steps.gate.outputs.publish == 'true'
+        run: npm run build
+
+      - name: Publish
+        if: steps.gate.outputs.publish == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish
+
+      - name: Tag release
+        if: steps.gate.outputs.publish == 'true'
+        run: |
+          set -euo pipefail
+          TAG="v${{ steps.gate.outputs.version }}"
+          git tag "$TAG"
+          git push origin "$TAG"

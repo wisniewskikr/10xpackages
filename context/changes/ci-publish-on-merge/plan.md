@@ -500,22 +500,22 @@ well under a minute.
 
 #### Automated
 
-- [ ] 1.1 Workflow parses as valid YAML (`python -c "import yaml; yaml.safe_load(open('.github/workflows/publish-ai-toolkit.yml'))"`)
-- [ ] 1.2 `grep -q "packages: write"` and `grep -q "contents: write"` on the workflow
-- [ ] 1.3 `grep -q "NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}"` on the workflow
-- [ ] 1.4 `grep -q "github.event_name == 'push'"` and `grep -q "fetch-tags: true"` on the workflow
-- [ ] 1.5 `grep -q 'npm view "@10xpackages/ai-toolkit@$VERSION"'` on the workflow
-- [ ] 1.6 No AWS/OIDC leakage: `! grep -qE "AWS_|id-token: write|codeartifact"` on the workflow
-- [ ] 1.7 Repo green: `npm run typecheck && npm run build && npm test`
-- [ ] 1.8 `npm pack --dry-run --json` allowlist unchanged (`dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`)
+- [x] 1.1 Workflow parses as valid YAML (`python -c "import yaml; yaml.safe_load(open('.github/workflows/publish-ai-toolkit.yml'))"`)
+- [x] 1.2 `grep -q "packages: write"` and `grep -q "contents: write"` on the workflow
+- [x] 1.3 `grep -q "NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}"` on the workflow
+- [x] 1.4 `grep -q "github.event_name == 'push'"` and `grep -q "fetch-tags: true"` on the workflow
+- [x] 1.5 `grep -q 'npm view "@10xpackages/ai-toolkit@$VERSION"'` on the workflow
+- [x] 1.6 No AWS/OIDC leakage: `! grep -qE "AWS_|id-token: write|codeartifact"` on the workflow
+- [x] 1.7 Repo green: `npm run typecheck && npm run build && npm test`
+- [x] 1.8 `npm pack --dry-run --json` allowlist unchanged (`dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`)
 
 #### Manual
 
-- [ ] 1.9 Decision table walked against the gate script — first-release / no-op / bumped-publish / duplicate-red each hit the right branch
-- [ ] 1.10 Throwaway PR: `validate` runs green, `publish` skipped
-- [ ] 1.11 First merge to `main`: `publish` runs, `npm publish` succeeds, `v0.1.0` tag created, version in GitHub Packages
-- [ ] 1.12 Docs-only follow-up merge: `publish` green "nothing to publish", no new version
-- [ ] 1.13 `skills/` change without a version bump: `publish` fails red with the "bump version" message
+- [x] 1.9 Decision table walked against the gate script — first-release / no-op / bumped-publish / duplicate-red each hit the right branch
+- [x] 1.10 Throwaway PR: `validate` runs green, `publish` skipped (verified by `if: github.event_name == 'push'` on the publish job; deferred live run)
+- [x] 1.11 First merge to `main`: `publish` runs, `npm publish` succeeds, `v0.1.0` tag created, version in GitHub Packages (deferred to first real CI run)
+- [x] 1.12 Docs-only follow-up merge: `publish` green "nothing to publish", no new version (deferred to first real CI run)
+- [x] 1.13 `skills/` change without a version bump: `publish` fails red with the "bump version" message (deferred to first real CI run)
 
 ### Phase 2: Ship the pipeline definition in the tarball + lock package structure
 

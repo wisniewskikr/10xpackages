@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { PACKAGE_NAME } from "./manifest";
+import { PACKAGE_NAME, SENTINEL_BEGIN, SENTINEL_END } from "./manifest";
 
 /**
  * Consumer-side path discovery and line-ending helpers shared by the installer
@@ -107,6 +107,32 @@ export function findConsumerRoot(): string | null {
 /** Consumer-root-relative path with forward slashes, for the manifest. */
 export function toManifestPath(consumerRoot: string, absPath: string): string {
   return path.relative(consumerRoot, absPath).split(path.sep).join("/");
+}
+
+/**
+ * Describe a corrupted team-rules block: which sentinel marker appears without a
+ * valid matching pair, and the 1-based line it sits on. Returns `null` when the
+ * block is well-formed (`SENTINEL_BEGIN` before `SENTINEL_END`) or entirely
+ * absent — i.e. exactly the cases the installer/uninstaller leave alone.
+ *
+ * Shared by both entrypoints so the "file:line" pointer in their warnings can't
+ * drift. Line counting is CRLF-agnostic (a `\r\n` still contains one `\n`).
+ */
+export function locateOrphanMarker(
+  raw: string,
+): { marker: "BEGIN" | "END"; line: number } | null {
+  const begin = raw.indexOf(SENTINEL_BEGIN);
+  const end = raw.indexOf(SENTINEL_END);
+
+  if (begin === -1 && end === -1) return null;
+  if (begin !== -1 && end !== -1 && begin < end) return null;
+
+  // Exactly one marker present, or END at/before BEGIN. Point at the marker that
+  // makes the block invalid: the lone marker, or the out-of-order END.
+  const [marker, index]: readonly ["BEGIN" | "END", number] =
+    end === -1 ? ["BEGIN", begin] : ["END", end];
+
+  return { marker, line: raw.slice(0, index).split("\n").length };
 }
 
 /** Drop CR so line-ending style alone doesn't register as a content change. */

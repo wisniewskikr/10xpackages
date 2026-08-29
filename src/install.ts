@@ -11,6 +11,7 @@ import {
 import {
   MANIFEST_RELPATH,
   SKILLS_RELDIR,
+  locateOrphanMarker,
   removeEmptyDirs,
   resolveTarget,
   stripCr,
@@ -246,10 +247,13 @@ function applyRulesBlock(consumerRoot: string): string[] {
   const end = existing.indexOf(SENTINEL_END);
 
   if ((begin === -1) !== (end === -1) || (begin !== -1 && end < begin)) {
+    const orphan = locateOrphanMarker(existing);
+    const where = orphan ? `CLAUDE.md:${orphan.line}` : "CLAUDE.md";
+    const which = orphan?.marker ?? (begin === -1 ? "END" : "BEGIN");
     console.warn(
-      `${PACKAGE_NAME}: CLAUDE.md has a malformed team-rules block ` +
-        `(${begin === -1 ? "END" : "BEGIN"} marker without its pair) — ` +
-        `leaving the file untouched. Fix or remove the stray marker, then re-install.`,
+      `${PACKAGE_NAME}: ${where}: team-rules block is corrupted — the ${which} ` +
+        `marker has no matching pair; not repairing (MVP). Fix or remove the ` +
+        `stray marker, then re-install.`,
     );
     return [];
   }

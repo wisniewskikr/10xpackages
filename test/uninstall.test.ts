@@ -164,6 +164,9 @@ describe("runUninstall — manifest-driven removal (S-03)", () => {
 
     expect(readFileSync(join(consumerRoot, "CLAUDE.md"), "utf8")).toBe(seed);
     expect(warn).toHaveBeenCalled();
+    const message = warn.mock.calls.flat().join(" ");
+    expect(message).toMatch(/CLAUDE\.md:3\b/);
+    expect(message).toContain("corrupted");
     expect(existsSync(join(consumerRoot, MANIFEST_REL))).toBe(false);
   });
 

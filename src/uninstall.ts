@@ -11,6 +11,7 @@ import {
   MANIFEST_RELPATH,
   SKILLS_RELDIR,
   findConsumerRoot,
+  locateOrphanMarker,
   removeEmptyDirs,
   stripCr,
   toCrlf,
@@ -172,9 +173,12 @@ export async function runUninstall(): Promise<void> {
         const current = fs.readFileSync(abs, "utf8");
         const next = removeRulesBlock(current);
         if (next === null) {
+          const orphan = locateOrphanMarker(current);
+          const where = orphan ? `CLAUDE.md:${orphan.line}` : "CLAUDE.md";
+          const which = orphan?.marker ?? "BEGIN";
           console.warn(
-            `${PACKAGE_NAME}: CLAUDE.md has a malformed team-rules block ` +
-              `(one marker without its pair) — left untouched.`,
+            `${PACKAGE_NAME}: ${where}: team-rules block is corrupted — the ` +
+              `${which} marker has no matching pair; left untouched.`,
           );
           continue;
         }

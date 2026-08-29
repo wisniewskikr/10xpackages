@@ -193,7 +193,24 @@ describe("runInstall — team rules block (Phase 2)", () => {
     expect(readFileSync(claudeMd, "utf8")).toBe(seeded);
     expect(countOccurrences(readFileSync(claudeMd, "utf8"), BEGIN)).toBe(1);
     expect(warn).toHaveBeenCalled();
+    const message = warn.mock.calls.flat().join(" ");
+    expect(message).toMatch(/CLAUDE\.md:3\b/);
+    expect(message).toContain("corrupted");
+    expect(message).toContain("BEGIN");
     expect(readManifest().files).not.toContain("CLAUDE.md");
+  });
+
+  it("points at the orphaned END line when BEGIN is the missing marker", async () => {
+    const warn = vi.spyOn(console, "warn");
+    const seeded = `# Mine\n\nkeep me\n${END}\n`;
+    writeFileSync(claudeMd, seeded);
+
+    await runInstall();
+
+    expect(readFileSync(claudeMd, "utf8")).toBe(seeded);
+    const message = warn.mock.calls.flat().join(" ");
+    expect(message).toMatch(/CLAUDE\.md:4\b/);
+    expect(message).toContain("END");
   });
 });
 

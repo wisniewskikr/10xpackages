@@ -458,15 +458,15 @@ message on their next `install`; no state format changes.
 
 #### Automated
 
-- [ ] 1.1 Build passes: `npm run build`
-- [ ] 1.2 Type check passes: `npm run typecheck`
-- [ ] 1.3 Full suite passes, incl. new `test/consumer.test.ts` and extended malformed-block assertions: `npm test`
-- [ ] 1.4 `npm pack --dry-run --json` lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
+- [x] 1.1 Build passes: `npm run build`
+- [x] 1.2 Type check passes: `npm run typecheck`
+- [x] 1.3 Full suite passes, incl. new `test/consumer.test.ts` and extended malformed-block assertions: `npm test`
+- [x] 1.4 `npm pack --dry-run --json` lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
 
 #### Manual
 
-- [ ] 1.5 Scratch repo: lone `BEGIN` on line 3 → `install` warns `CLAUDE.md:3` + "not repairing", file unchanged, rest of reconcile runs
-- [ ] 1.6 Same file → `uninstall` logs the same `CLAUDE.md:3` pointer, file untouched
+- [x] 1.5 Scratch repo: lone `BEGIN` on line 3 → `install` warns `CLAUDE.md:3` + "not repairing", file unchanged, rest of reconcile runs
+- [x] 1.6 Same file → `uninstall` logs the same `CLAUDE.md:3` pointer, file untouched
 
 ### Phase 2: FR-014 — sentinel-injection guard
 

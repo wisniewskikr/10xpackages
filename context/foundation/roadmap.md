@@ -35,7 +35,7 @@ Zespół w jednej organizacji GitHub zbudował warsztat pracy z AI — skille, r
 | S-03  | consumer-uninstall-clean    | zdeinstalować paczkę i zostać z czystym repo (zero pozostałości)                                          | S-01          | US-02, FR-011                                   | in-progress |
 | S-04  | standalone-copy-install     | zainstalować paczkę jednym poleceniem `npx` w repo bez manifestu projektu (Python/Go/Rust)               | S-01          | US-02, FR-005                                   | in-progress |
 | S-05  | installer-safe-refusals     | dostać czytelną odmowę zamiast cichej szkody przy uszkodzonym bloku reguł lub regule z podrzuconym znacznikiem | S-01     | US-02, FR-012, FR-014, FR-013                   | in-progress |
-| S-06  | ci-publish-on-merge         | zmergować zmianę artefaktu do main i w jednym przebiegu CI opublikować nową wersję do rejestru            | F-01          | US-01, FR-001, FR-002, FR-003, FR-004           | proposed |
+| S-06  | ci-publish-on-merge         | zmergować zmianę artefaktu do main i w jednym przebiegu CI opublikować nową wersję do rejestru            | F-01          | US-01, FR-001, FR-002, FR-003, FR-004           | planning |
 | S-07  | registry-round-trip         | (repo-konsument) opt-in przez commit linii mapowania rejestru i pobrać opublikowaną wersję w swoim CI     | S-06, S-01    | US-01, US-02, FR-003, FR-005, FR-006            | proposed |
 
 ## Streams
@@ -156,7 +156,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Kiedy przejść na automatyczne wersjonowanie semantyczne + pełną kontrolę różnic (OQ-1). Owner: administrator paczki. Block: no (MVP zostaje przy ręcznym podbijaniu).
   - Szablon linii mapowania rejestru dla konsumenta na czystym Windows (OQ-4). Owner: administrator paczki. Block: no.
 - **Risk:** Cała nowa infrastruktura: workflow CI, bramka różnic na plikach paczki, krótkotrwałe poświadczenie, obsługa duplikatu wersji. Zależy tylko od F-01, więc biegnie równolegle z całą ścieżką konsumenta. Przy blokerze `time` kuszące jest rozbudowanie pipeline'u — trzymać jeden plik workflow, bez automatycznego wersjonowania (OQ-1).
-- **Status:** proposed
+- **Status:** planning
 
 ### S-07: Domknięcie pętli — publikacja i odczyt przez realny rejestr
 

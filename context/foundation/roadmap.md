@@ -139,7 +139,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-02, S-03, S-04, S-06
 - **Blockers:** —
 - **Unknowns:**
-  - Pełna polityka kolizji nazw skilli — ostrzeżenie / prefiks scope / przerwanie (OQ-5). Owner: administrator paczki. Block: no (domyślne „ostrzeż i pomiń" z S-01 wystarcza do wydania; pełna decyzja zapada tutaj).
+  - ~~Pełna polityka kolizji nazw skilli (OQ-5)~~ — **rozstrzygnięte w S-05: „ostrzeż i pomiń" jest ostateczną polityką MVP** (bez prefiksu scope, bez twardego przerwania).
   - FR-013 pozostaje nice-to-have — realizowane tylko jeśli budżet 3 tygodni po godzinach pozwoli; inaczej przechodzi do Parked. Owner: administrator paczki. Block: no.
 - **Risk:** To slice guardraili „łagodnego obejścia" — rozszerza tę samą ścieżkę zapisu znaczników co S-01, stąd zależność. Przy blokerze `time`: FR-012 i FR-014 są must-have i nie mogą wypaść; FR-013 jest pierwszym kandydatem do cięcia.
 - **Status:** in-progress
@@ -187,7 +187,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Open Roadmap Questions
 
 1. **OQ-4 Zachowanie na Windows** — tryb wędrujący (symlink: uprawnienia / Developer Mode) oraz warunkowa linia poświadczenia oparta na `echo`/bash wymagają weryfikacji na czystym Windows bez shella POSIX. Owner: administrator paczki. Block: S-01, S-04, S-06, S-07 — do rozstrzygnięcia przed wydaniem MVP, nie blokuje planowania.
-2. **OQ-5 Kolizja nazw skilli** — co robi instalator, gdy skill z paczki ma tę samą nazwę co istniejący skill konsumenta (ostrzeżenie? prefiks scope? przerwanie?). Owner: administrator paczki. Block: S-01, S-05 — do rozstrzygnięcia przed wydaniem MVP.
+2. **OQ-5 Kolizja nazw skilli** — co robi instalator, gdy skill z paczki ma tę samą nazwę co istniejący skill konsumenta (ostrzeżenie? prefiks scope? przerwanie?). Owner: administrator paczki. Block: — (rozstrzygnięte). **Resolved in S-05: „ostrzeż i pomiń" jest ostateczną polityką MVP — katalog konsumenta zostaje nietknięty i poza manifestem; bez prefiksu scope, bez twardego przerwania.**
 3. **OQ-1 Migracja na automatyczne wersjonowanie** — kiedy przejść z ręcznego podbijania wersji na automatyczne wersjonowanie semantyczne + pełną kontrolę różnic. Owner: administrator paczki. Block: S-06 — nieblokujące dla MVP.
 4. **OQ-6 Polityka manifestu w repo konsumenta** — czy manifest instalacji ma być commitowany, czy dodany do ignorowanych plików kontroli wersji. Owner: administrator paczki. Block: S-01 — nieblokujące, rekomendacja do README.
 5. **OQ-7 Best-effort hook deinstalacji** — czy dołożyć hook menedżera pakietów (`preuninstall`) jako uzupełnienie manifestowej deinstalacji. Owner: administrator paczki. Block: S-03 — nieblokujące dla MVP.

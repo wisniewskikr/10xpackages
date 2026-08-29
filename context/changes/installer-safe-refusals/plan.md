@@ -486,23 +486,23 @@ message on their next `install`; no state format changes.
 
 #### Automated
 
-- [x] 3.1 Build passes: `npm run build` — <sha>
-- [x] 3.2 Type check passes: `npm run typecheck` — <sha>
-- [x] 3.3 Full suite passes incl. new corrupt-manifest listing tests, existing tests unchanged: `npm test` — <sha>
-- [x] 3.4 `npm pack --dry-run --json` allowlist unchanged — <sha>
+- [x] 3.1 Build passes: `npm run build` — 960ee13
+- [x] 3.2 Type check passes: `npm run typecheck` — 960ee13
+- [x] 3.3 Full suite passes incl. new corrupt-manifest listing tests, existing tests unchanged: `npm test` — 960ee13
+- [x] 3.4 `npm pack --dry-run --json` allowlist unchanged — 960ee13
 
 #### Manual
 
-- [x] 3.5 Scratch repo: full install, then corrupt the manifest → `uninstall` prints the candidate list matching disk and deletes nothing; `git status` clean — <sha>
+- [x] 3.5 Scratch repo: full install, then corrupt the manifest → `uninstall` prints the candidate list matching disk and deletes nothing; `git status` clean — 960ee13
 
 ### Phase 4: Documentation + OQ-5 ratification
 
 #### Automated
 
-- [ ] 4.1 `npm run build && npm test` green
-- [ ] 4.2 `npm pack --dry-run --json` allowlist unchanged
+- [x] 4.1 `npm run build && npm test` green — <sha>
+- [x] 4.2 `npm pack --dry-run --json` allowlist unchanged — <sha>
 
 #### Manual
 
-- [ ] 4.3 README "Safe refusals" section matches behaviour; collision policy + OQ-5 resolution unambiguous
-- [ ] 4.4 `context/foundation/roadmap.md` OQ-5 entry shows the resolution
+- [x] 4.3 README "Safe refusals" section matches behaviour; collision policy + OQ-5 resolution unambiguous — <sha>
+- [x] 4.4 `context/foundation/roadmap.md` OQ-5 entry shows the resolution — <sha>

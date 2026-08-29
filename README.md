@@ -6,28 +6,25 @@ merge, and one-command install in any consumer repo.
 
 ## Status
 
-**Consumer install + update + uninstall + standalone copy (S-01, S-02, S-03,
-S-04).** `install` performs a real reconcile against the consumer project,
-including removing artifacts withdrawn since the last version and staying
-diff-free on CRLF repos. In a project with no `package.json` (or with
+**Consumer install + update + uninstall + standalone copy + safe refusals
+(S-01, S-02, S-03, S-04, S-05).** `install` performs a real reconcile against the
+consumer project, including removing artifacts withdrawn since the last version
+and staying diff-free on CRLF repos. In a project with no `package.json` (or with
 `--copy`), it lays skills down as real file copies instead of symlinks.
 `uninstall` reads the install manifest and removes exactly what it recorded —
 skill links or copied files, the `CLAUDE.md` rules block, the `.npmrc` lines —
 leaving the consumer's own content untouched and the repo free of package
-traces.
-
-Not yet implemented: the rich unsafe-state refusals — corrupted-block abort with
-a file/line pointer, sentinel-injection guard, full skill-name-collision policy,
-corrupted-manifest candidate listing (S-05).
+traces. Unsafe states get a loud, actionable refusal rather than silent damage
+(see **Safe refusals** below).
 
 ## Layout
 
 ```
 src/            TypeScript sources (build input)
   manifest.ts   sentinel markers + ToolkitManifest contract
-  consumer.ts   shared consumer-root discovery + line-ending helpers
-  install.ts    installer — skill links (roaming) or file copies (standalone), rules block, .npmrc line, manifest, withdrawn-artifact prune
-  uninstall.ts  uninstaller — manifest-driven removal of every file install wrote
+  consumer.ts   shared consumer-root discovery, line-ending + orphan-marker helpers
+  install.ts    installer — skill links (roaming) or file copies (standalone), rules block, .npmrc line, manifest, withdrawn-artifact prune, sentinel-injection guard
+  uninstall.ts  uninstaller — manifest-driven removal of every file install wrote; candidate listing on a corrupt manifest
   cli.ts        `ai-toolkit` command dispatch
 bin/ai-toolkit.js   thin launcher -> dist/cli.js
 skills/         shipped skills, one dir per skill
@@ -114,8 +111,34 @@ uninstall` yourself before dropping `@10xpackages/ai-toolkit` from your manifest
 It does not touch `package.json` or the lockfile.
 
 If the manifest is missing or unparseable, uninstall makes **no changes** and
-warns rather than guessing what to delete. (Listing candidate files for manual
-removal in that case is planned for S-05.)
+warns rather than guessing what to delete. When the manifest is *unparseable* it
+also prints a best-effort list of paths this package plausibly installed — skill
+entries under `.claude/skills/`, `CLAUDE.md` if it still carries the rules block,
+`.npmrc` if it still carries the installer's lines, and the manifest itself — so
+you have a manual cleanup path. Nothing is deleted, and there is no `--force`.
+
+### Safe refusals
+
+The installer refuses, loudly, in three states where blindly proceeding would
+damage the consumer's files (PRD FR-012 / FR-014 / FR-013):
+
+- **Corrupted rules block.** If `CLAUDE.md` has one sentinel marker without its
+  pair (or `END` before `BEGIN`), `install` and `uninstall` both warn with a
+  `CLAUDE.md:<line>` pointer at the orphaned marker and leave the file untouched.
+  No automatic repair is attempted in the MVP — fix or remove the stray marker,
+  then re-run.
+- **Sentinel-injection guard.** If the team-rules payload body itself contains
+  either boundary marker, `install` refuses to write the block (a later install
+  could otherwise mistake the planted marker for a real fence and splice away
+  surrounding content) and leaves `CLAUDE.md` untouched.
+- **Corrupted manifest on uninstall.** Covered just above — candidate list, no
+  deletion.
+
+**Skill-name collisions (OQ-5, resolved).** If a shipped skill has the same name
+as a directory the consumer already has under `.claude/skills/`, the installer
+**warns and skips** that skill, leaving the consumer's directory untouched and
+out of the manifest. That is the final MVP policy — no scope-prefixing, no hard
+abort.
 
 ### Standalone copy install
 
@@ -172,4 +195,5 @@ local `npm login` — never a committed token.
 Product docs live in [`context/foundation/`](context/foundation/): `prd.md`,
 `roadmap.md`, `tech-stack.md`. Per-change plans are in `context/changes/` —
 `consumer-install-symlink/` (S-01), `consumer-update-and-reconcile/` (S-02),
-`consumer-uninstall-clean/` (S-03), and `standalone-copy-install/` (S-04).
+`consumer-uninstall-clean/` (S-03), `standalone-copy-install/` (S-04), and
+`installer-safe-refusals/` (S-05).

@@ -190,10 +190,50 @@ Pass `--copy` to force copy mode in a repo that *does* have a `package.json`.
 Auth is a short-lived credential in CI (`GITHUB_TOKEN` → `NODE_AUTH_TOKEN`) or a
 local `npm login` — never a committed token.
 
+## CI publish on merge (S-06)
+
+`.github/workflows/publish-ai-toolkit.yml` turns "merge to `main`" into "a new
+version in the org's private GitHub Packages registry", in one run, with no
+stored secret.
+
+| Event | What runs |
+| --- | --- |
+| `pull_request` → `main` | `validate` only — `npm ci`, `typecheck`, `build`, `test`, `npm pack --dry-run`. Never publishes. |
+| `push` → `main` | `validate`, then `publish` (gated — see below). |
+
+**The publish gate.** The `publish` job checks out full history + tags and
+decides:
+
+| Last `vX.Y.Z` tag | Packaged files changed since it? | `package.json#version` already in the registry? | Outcome |
+| --- | --- | --- | --- |
+| none (first release) | — | — | publish, then tag `v0.1.0` |
+| present | no | — | **green no-op** — "nothing to publish" |
+| present | yes | no | publish the bumped version, then tag it |
+| present | yes | yes | **red build** — "bump \"version\" in package.json" (FR-004) |
+
+"Packaged files" = `src bin skills rules README.md package.json tsconfig.json
+tsup.config.ts .github/workflows` diffed across `<last tag>..HEAD` (FR-003 diff
+gate). A merge that touches only `context/`, docs, or unrelated config produces
+no release.
+
+**Auth.** `permissions: contents: write` (to push the release tag) +
+`packages: write`; the publish and tag-probe steps set `NODE_AUTH_TOKEN: ${{
+secrets.GITHUB_TOKEN }}` — the token GitHub Actions injects for the run. No PAT,
+no repo secret. A `concurrency` group per ref serializes rapid merges.
+
+**The only manual step is the version bump** in `package.json` before merging —
+automated semantic versioning is deferred (OQ-1). Forget to bump after changing a
+packaged file and the run fails red rather than silently skipping.
+
+**One-time setup.** The `@10xpackages/ai-toolkit` package must be linked to this
+repository in GitHub Packages so the run's `GITHUB_TOKEN` can write to it. The
+published tarball itself contains `.github/workflows/publish-ai-toolkit.yml` (the
+pipeline definition ships with the package — US-01 AC).
+
 ## Context
 
 Product docs live in [`context/foundation/`](context/foundation/): `prd.md`,
 `roadmap.md`, `tech-stack.md`. Per-change plans are in `context/changes/` —
 `consumer-install-symlink/` (S-01), `consumer-update-and-reconcile/` (S-02),
-`consumer-uninstall-clean/` (S-03), `standalone-copy-install/` (S-04), and
-`installer-safe-refusals/` (S-05).
+`consumer-uninstall-clean/` (S-03), `standalone-copy-install/` (S-04),
+`installer-safe-refusals/` (S-05), and `ci-publish-on-merge/` (S-06).

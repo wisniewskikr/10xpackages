@@ -521,26 +521,26 @@ well under a minute.
 
 #### Automated
 
-- [x] 2.1 `npm test` green incl. new `.github/` and SKILL.md-frontmatter assertions
-- [x] 2.2 `npm run typecheck` clean
-- [x] 2.3 `npm pack --dry-run --json` lists `.github/workflows/publish-ai-toolkit.yml`
-- [x] 2.4 `npm pack --dry-run --json` still excludes `src/`, `test/`, `context/`, `.claude/`
-- [x] 2.5 `package.json#files` includes `.github/` (`node -e` exit-code check)
+- [x] 2.1 `npm test` green incl. new `.github/` and SKILL.md-frontmatter assertions — c7d60ad
+- [x] 2.2 `npm run typecheck` clean — c7d60ad
+- [x] 2.3 `npm pack --dry-run --json` lists `.github/workflows/publish-ai-toolkit.yml` — c7d60ad
+- [x] 2.4 `npm pack --dry-run --json` still excludes `src/`, `test/`, `context/`, `.claude/` — c7d60ad
+- [x] 2.5 `package.json#files` includes `.github/` (`node -e` exit-code check) — c7d60ad
 
 #### Manual
 
-- [x] 2.6 `npm pack` + `tar -tf` shows `package/.github/workflows/publish-ai-toolkit.yml` and nothing else new
+- [x] 2.6 `npm pack` + `tar -tf` shows `package/.github/workflows/publish-ai-toolkit.yml` and nothing else new — c7d60ad
 
 ### Phase 3: Docs + roadmap sync
 
 #### Automated
 
-- [ ] 3.1 `npm test` green
-- [ ] 3.2 `npm pack --dry-run --json` unchanged from Phase 2
-- [ ] 3.3 `grep -q "CI publish on merge" README.md`
-- [ ] 3.4 S-06 block of `context/foundation/roadmap.md` shows `Status:` `in-progress`
+- [x] 3.1 `npm test` green
+- [x] 3.2 `npm pack --dry-run --json` unchanged from Phase 2
+- [x] 3.3 `grep -q "CI publish on merge" README.md`
+- [x] 3.4 S-06 block of `context/foundation/roadmap.md` shows `Status:` `in-progress`
 
 #### Manual
 
-- [ ] 3.5 README section matches the workflow's decision table, permissions, and token
-- [ ] 3.6 Roadmap "At a glance" row and S-06 body agree on `in-progress`
+- [x] 3.5 README section matches the workflow's decision table, permissions, and token
+- [x] 3.6 Roadmap "At a glance" row and S-06 body agree on `in-progress`

@@ -497,14 +497,14 @@ manifest found" no-op.
 
 #### Automated
 
-- [ ] 1.1 Build passes: `npm run build`
-- [ ] 1.2 Type check passes: `npm run typecheck`
-- [ ] 1.3 Full test suite passes unchanged: `npm test`
-- [ ] 1.4 `npm pack --dry-run --json` still lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
+- [x] 1.1 Build passes: `npm run build`
+- [x] 1.2 Type check passes: `npm run typecheck`
+- [x] 1.3 Full test suite passes unchanged: `npm test`
+- [x] 1.4 `npm pack --dry-run --json` still lists only `dist/`, `skills/`, `rules/`, `bin/`, `README.md`, `package.json`
 
 #### Manual
 
-- [ ] 1.5 `git diff` shows only a move (`install.ts` → `consumer.ts`) plus one new import line — no logic change
+- [x] 1.5 `git diff` shows only a move (`install.ts` → `consumer.ts`) plus one new import line — no logic change
 
 ### Phase 2: Manifest-driven uninstall core + CLI
 

@@ -32,7 +32,7 @@ Zespół w jednej organizacji GitHub zbudował warsztat pracy z AI — skille, r
 | F-01  | package-skeleton            | (foundation) pakiet npm + build + testy + wewnętrzna struktura paczki gotowe do rozwijania               | —             | FR-001; Success Criteria (struktura paczki)     | in-progress |
 | S-01  | consumer-install-symlink    | zainstalować paczkę przez standardową instalację i dostać skille + blok reguł, z nietkniętymi dopiskami   | F-01          | US-02, FR-005, FR-006, FR-007, FR-008, FR-009   | in-progress |
 | S-02  | consumer-update-and-reconcile | zaktualizować / powtórzyć instalację i dostać nową treść bez śladu po wycofanych artefaktach, bez diffa | S-01          | US-02, FR-010                                   | in-progress |
-| S-03  | consumer-uninstall-clean    | zdeinstalować paczkę i zostać z czystym repo (zero pozostałości)                                          | S-01          | US-02, FR-011                                   | planning |
+| S-03  | consumer-uninstall-clean    | zdeinstalować paczkę i zostać z czystym repo (zero pozostałości)                                          | S-01          | US-02, FR-011                                   | in-progress |
 | S-04  | standalone-copy-install     | zainstalować paczkę jednym poleceniem `npx` w repo bez manifestu projektu (Python/Go/Rust)               | S-01          | US-02, FR-005                                   | proposed |
 | S-05  | installer-safe-refusals     | dostać czytelną odmowę zamiast cichej szkody przy uszkodzonym bloku reguł lub regule z podrzuconym znacznikiem | S-01     | US-02, FR-012, FR-014, FR-013                   | proposed |
 | S-06  | ci-publish-on-merge         | zmergować zmianę artefaktu do main i w jednym przebiegu CI opublikować nową wersję do rejestru            | F-01          | US-01, FR-001, FR-002, FR-003, FR-004           | proposed |
@@ -115,7 +115,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Czy dołożyć best-effort hook menedżera pakietów (`preuninstall`) jako uzupełnienie manifestowej deinstalacji, wiedząc, że hooki bywają pomijane (OQ-7). Owner: administrator paczki. Block: no. **Rozstrzygnięte w planie S-03: brak hooka — npm nie uruchamia skryptów cyklu życia zależności przy jej usuwaniu; deinstalacja pozostaje świadomym poleceniem `npx ai-toolkit uninstall`.**
 - **Risk:** Manifestowa deinstalacja jest celowo niezależna od hooków — konsument musi ją odpalić świadomie. Sekwencjonowany po S-01, bo potrzebny format manifestu. Ryzyko: rozjazd manifestu z rzeczywistością po ręcznej ingerencji w pliki — łagodzi FR-013 (realizowane w S-05).
-- **Status:** planning
+- **Status:** in-progress
 
 ### S-04: Instalacja jako samodzielna kopia (bez manifestu projektu)
 

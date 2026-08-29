@@ -8,48 +8,18 @@ import {
   SENTINEL_END,
   type ToolkitManifest,
 } from "./manifest";
-
-/** Consumer-root-relative location of the install manifest. */
-const MANIFEST_RELPATH = path.join(".claude", ".ai-toolkit-manifest.json");
-/** Consumer-root-relative directory Claude Code reads skills from. */
-const SKILLS_RELDIR = path.join(".claude", "skills");
-
-/**
- * Walk up from this module's directory looking for an enclosing `node_modules/`.
- * When found, the parent of `node_modules/` is the consumer project root and the
- * package is running as an installed dependency. When not found, we are running
- * from a checkout of the toolkit repo itself (local dev, CI) and install is a
- * no-op. `PROJECT_ROOT` overrides both (used by the test suite).
- */
-function findConsumerRoot(): string | null {
-  if (process.env.PROJECT_ROOT) return process.env.PROJECT_ROOT;
-
-  let dir = __dirname;
-  while (dir !== path.dirname(dir)) {
-    if (path.basename(dir) === "node_modules") return path.dirname(dir);
-    dir = path.dirname(dir);
-  }
-  return null;
-}
+import {
+  MANIFEST_RELPATH,
+  SKILLS_RELDIR,
+  findConsumerRoot,
+  stripCr,
+  toCrlf,
+  toManifestPath,
+} from "./consumer";
 
 /** Absolute path to a shipped payload directory (`skills`, `rules`). */
 function payloadDir(name: string): string {
   return path.join(__dirname, "..", name);
-}
-
-/** Consumer-root-relative path with forward slashes, for the manifest. */
-function toManifestPath(consumerRoot: string, absPath: string): string {
-  return path.relative(consumerRoot, absPath).split(path.sep).join("/");
-}
-
-/** Drop CR so line-ending style alone doesn't register as a content change. */
-function stripCr(text: string): string {
-  return text.replace(/\r\n/g, "\n");
-}
-
-/** Re-apply CRLF endings to text assembled with LF. */
-function toCrlf(text: string): string {
-  return stripCr(text).replace(/\n/g, "\r\n");
 }
 
 /**

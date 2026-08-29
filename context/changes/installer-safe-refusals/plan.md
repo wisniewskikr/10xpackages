@@ -499,10 +499,10 @@ message on their next `install`; no state format changes.
 
 #### Automated
 
-- [x] 4.1 `npm run build && npm test` green — <sha>
-- [x] 4.2 `npm pack --dry-run --json` allowlist unchanged — <sha>
+- [x] 4.1 `npm run build && npm test` green — c911646
+- [x] 4.2 `npm pack --dry-run --json` allowlist unchanged — c911646
 
 #### Manual
 
-- [x] 4.3 README "Safe refusals" section matches behaviour; collision policy + OQ-5 resolution unambiguous — <sha>
-- [x] 4.4 `context/foundation/roadmap.md` OQ-5 entry shows the resolution — <sha>
+- [x] 4.3 README "Safe refusals" section matches behaviour; collision policy + OQ-5 resolution unambiguous — c911646
+- [x] 4.4 `context/foundation/roadmap.md` OQ-5 entry shows the resolution — c911646

@@ -1,7 +1,7 @@
 ---
 change_id: installer-safe-refusals
 title: Installer safe refusals
-status: implementing
+status: implemented
 created: 2026-08-29
 updated: 2026-08-29
 archived_at: null

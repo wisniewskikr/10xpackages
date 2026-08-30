@@ -49,29 +49,49 @@ new version whenever `main` changes.
 
 ## User usage
 
-### Node repo
+### Pick your project type
+
+| Project type | Mode | How skills land |
+| --- | --- | --- |
+| **JavaScript / TypeScript** (has `package.json`) | Roaming | Symlink / junction into `node_modules` — auto-refreshes on `npm update` |
+| **Java, Python, Go, Rust, …** (no `package.json`) | Standalone copy | Real file copies under `.claude/skills/` — refresh by re-running `install` |
+
+### JavaScript / TypeScript
 
 1. Add one line to the project `.npmrc`:
    ```
    @10xpackages:registry=https://npm.pkg.github.com
    ```
 2. Add `@10xpackages/ai-toolkit` to `devDependencies`.
-3. `npm install`. The `postinstall` hook runs `ai-toolkit install`, which lays down:
+3. `npm install`. The `postinstall` hook runs `ai-toolkit install` automatically.
+
+### Java (and any repo without `package.json`)
+
+1. Authenticate once: `npm login --registry=https://npm.pkg.github.com --scope=@10xpackages`
+   (or set `NODE_AUTH_TOKEN` in the environment).
+2. From the project root, run:
+   ```
+   npx @10xpackages/ai-toolkit install
+   ```
+   No `.npmrc` line and no `package.json` change — nothing to commit but the result.
+
+### What the installer writes (both modes)
 
 | What | Where |
 | --- | --- |
-| Each skill | `.claude/skills/<name>` — symlink / junction into `node_modules` (roams on update) |
+| Each skill | `.claude/skills/<name>` |
 | Rules block | `CLAUDE.md`, between `<!-- BEGIN/END @10xpackages/ai-toolkit -->` markers |
-| Registry line | `.npmrc` (appended if missing) |
+| Registry line | `.npmrc` (JS/TS mode only, appended if missing) |
 | Manifest | `.claude/.ai-toolkit-manifest.json` |
 
 ### Everyday actions
 
-| Action | How |
-| --- | --- |
-| **Update** | Bump the dependency version → re-install. New skills roam in, withdrawn ones are pruned, re-runs are diff-free |
-| **Uninstall** | Run `ai-toolkit uninstall` **before** dropping the dependency (npm has no uninstall hook). Removes only what it installed |
-| **Non-Node repo** (Python/Go/Rust) | Run `npx @10xpackages/ai-toolkit install` from the project root — skills are copied as real files. Re-run to refresh; `npx @10xpackages/ai-toolkit uninstall` to reverse |
+| Action | JavaScript / TypeScript | Java / other |
+| --- | --- | --- |
+| **Update** | Bump the dependency version → re-install. New skills roam in, withdrawn ones are pruned | Re-run `npx @10xpackages/ai-toolkit install` — same manifest diff prunes withdrawn skills |
+| **Uninstall** | Run `ai-toolkit uninstall` **before** dropping the dependency (npm has no uninstall hook) | Run `npx @10xpackages/ai-toolkit uninstall` |
+
+Re-runs are diff-free in both modes.
 
 ### Commit vs ignore
 

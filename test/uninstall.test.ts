@@ -21,10 +21,10 @@ const SKILL_LINK_REL = join(".claude", "skills", "code-review");
 const SKILL_LINK_POSIX = ".claude/skills/code-review";
 const PAYLOAD_SKILL = join(__dirname, "..", "skills", "code-review");
 
-const BEGIN = "<!-- BEGIN @10xpackages/ai-toolkit -->";
-const END = "<!-- END @10xpackages/ai-toolkit -->";
+const BEGIN = "<!-- BEGIN @wisniewskikr/ai-toolkit -->";
+const END = "<!-- END @wisniewskikr/ai-toolkit -->";
 const RULES_MARKER = "Prefer the smallest change that satisfies the request";
-const REGISTRY_LINE = "@10xpackages:registry=https://npm.pkg.github.com";
+const REGISTRY_LINE = "@wisniewskikr:registry=https://npm.pkg.github.com";
 const AUTH_LINE = "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}";
 
 /** True when `s` has CRLF endings and no bare LF. */

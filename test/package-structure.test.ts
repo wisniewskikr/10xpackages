@@ -51,8 +51,8 @@ describe("payload files", () => {
     const skill = readFileSync("skills/code-review/SKILL.md", "utf8");
     const rules = readFileSync("rules/CLAUDE.md", "utf8");
     for (const content of [skill, rules]) {
-      expect(content).not.toContain("<!-- BEGIN @10xpackages/ai-toolkit -->");
-      expect(content).not.toContain("<!-- END @10xpackages/ai-toolkit -->");
+      expect(content).not.toContain("<!-- BEGIN @wisniewskikr/ai-toolkit -->");
+      expect(content).not.toContain("<!-- END @wisniewskikr/ai-toolkit -->");
     }
   });
 });

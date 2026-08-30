@@ -304,7 +304,7 @@ function applyRulesBlock(consumerRoot: string): string[] {
  */
 function ensureNpmrc(consumerRoot: string): string[] {
   const npmrcPath = path.join(consumerRoot, ".npmrc");
-  const scope = PACKAGE_NAME.split("/")[0]; // "@10xpackages"
+  const scope = PACKAGE_NAME.split("/")[0]; // "@wisniewskikr"
   const registryLine = `${scope}:registry=https://npm.pkg.github.com`;
   // Literal text — `${NODE_AUTH_TOKEN}` is NOT interpolated here (double quotes),
   // it is the reference npm resolves from the environment when it reads .npmrc.

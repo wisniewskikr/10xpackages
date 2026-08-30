@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 20
           registry-url: "https://npm.pkg.github.com"
-          scope: "@10xpackages"
+          scope: "@wisniewskikr"
 
       - run: npm ci
       - run: npm run typecheck
@@ -46,7 +46,7 @@ jobs:
         with:
           node-version: 20
           registry-url: "https://npm.pkg.github.com"
-          scope: "@10xpackages"
+          scope: "@wisniewskikr"
 
       - run: npm ci
 
@@ -70,7 +70,7 @@ jobs:
           CHANGED=$(git diff --name-only "$LAST_TAG"..HEAD -- \
             src bin skills rules README.md package.json tsconfig.json tsup.config.ts .github/workflows)
 
-          if npm view "@10xpackages/ai-toolkit@$VERSION" version >/dev/null 2>&1; then
+          if npm view "@wisniewskikr/ai-toolkit@$VERSION" version >/dev/null 2>&1; then
             EXISTS=yes
           else
             EXISTS=no

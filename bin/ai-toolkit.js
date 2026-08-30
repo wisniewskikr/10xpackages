@@ -8,5 +8,5 @@ try {
   require("../dist/cli.js");
 } catch (error) {
   const message = error && error.message ? error.message : String(error);
-  console.warn(`@10xpackages/ai-toolkit: CLI not built yet (${message})`);
+  console.warn(`@wisniewskikr/ai-toolkit: CLI not built yet (${message})`);
 }

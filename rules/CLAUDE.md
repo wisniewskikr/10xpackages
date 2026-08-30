@@ -1,6 +1,6 @@
 # Team AI Rules
 
-These rules are maintained centrally in `@10xpackages/ai-toolkit` and installed
+These rules are maintained centrally in `@wisniewskikr/ai-toolkit` and installed
 into each project's rules file between sentinel markers. Edits inside the marked
 block are overwritten on the next update — change them in the toolkit repo.
 

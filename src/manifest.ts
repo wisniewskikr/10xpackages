@@ -1,5 +1,5 @@
 /**
- * Boundary contracts for the @10xpackages/ai-toolkit installer.
+ * Boundary contracts for the @wisniewskikr/ai-toolkit installer.
  *
  * This module is the single source of truth for the two interfaces that the
  * consumer-side reconcile logic (change: consumer-install-symlink / S-01 and
@@ -13,7 +13,7 @@
  */
 
 /** Published package name. Must match `package.json#name`. */
-export const PACKAGE_NAME = "@10xpackages/ai-toolkit";
+export const PACKAGE_NAME = "@wisniewskikr/ai-toolkit";
 
 /**
  * Package version, hand-synced with `package.json#version` for the MVP.
@@ -35,7 +35,7 @@ export type TargetTool = "claude-code";
  * `files` is the exact list the uninstaller removes — no directory-walk guessing.
  */
 export interface ToolkitManifest {
-  /** Package name, e.g. "@10xpackages/ai-toolkit". */
+  /** Package name, e.g. "@wisniewskikr/ai-toolkit". */
   package: string;
   /** Installed package version. */
   version: string;

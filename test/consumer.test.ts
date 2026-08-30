@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { locateOrphanMarker } from "../src/consumer";
 
-const BEGIN = "<!-- BEGIN @10xpackages/ai-toolkit -->";
-const END = "<!-- END @10xpackages/ai-toolkit -->";
+const BEGIN = "<!-- BEGIN @wisniewskikr/ai-toolkit -->";
+const END = "<!-- END @wisniewskikr/ai-toolkit -->";
 
 describe("locateOrphanMarker", () => {
   it("returns null for a well-formed block (BEGIN before END)", () => {

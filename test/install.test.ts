@@ -105,8 +105,8 @@ describe("runInstall — skills + manifest (Phase 1)", () => {
   });
 });
 
-const BEGIN = "<!-- BEGIN @10xpackages/ai-toolkit -->";
-const END = "<!-- END @10xpackages/ai-toolkit -->";
+const BEGIN = "<!-- BEGIN @wisniewskikr/ai-toolkit -->";
+const END = "<!-- END @wisniewskikr/ai-toolkit -->";
 // A stable sentence from the shipped rules/CLAUDE.md payload.
 const RULES_MARKER = "Prefer the smallest change that satisfies the request";
 
@@ -214,7 +214,7 @@ describe("runInstall — team rules block (Phase 2)", () => {
   });
 });
 
-const REGISTRY_LINE = "@10xpackages:registry=https://npm.pkg.github.com";
+const REGISTRY_LINE = "@wisniewskikr:registry=https://npm.pkg.github.com";
 const AUTH_LINE = "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}";
 
 describe("runInstall — .npmrc registry line + conditional credential (Phase 3)", () => {

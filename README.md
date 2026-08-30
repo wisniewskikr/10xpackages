@@ -1,4 +1,4 @@
-# @10xpackages/ai-toolkit
+# @wisniewskikr/ai-toolkit
 
 ## Description
 
@@ -60,18 +60,18 @@ new version whenever `main` changes.
 
 1. Add one line to the project `.npmrc`:
    ```
-   @10xpackages:registry=https://npm.pkg.github.com
+   @wisniewskikr:registry=https://npm.pkg.github.com
    ```
-2. Add `@10xpackages/ai-toolkit` to `devDependencies`.
+2. Add `@wisniewskikr/ai-toolkit` to `devDependencies`.
 3. `npm install`. The `postinstall` hook runs `ai-toolkit install` automatically.
 
 ### Java (and any repo without `package.json`)
 
-1. Authenticate once: `npm login --registry=https://npm.pkg.github.com --scope=@10xpackages`
+1. Authenticate once: `npm login --registry=https://npm.pkg.github.com --scope=@wisniewskikr`
    (or set `NODE_AUTH_TOKEN` in the environment).
 2. From the project root, run:
    ```
-   npx @10xpackages/ai-toolkit install
+   npx @wisniewskikr/ai-toolkit install
    ```
    No `.npmrc` line and no `package.json` change — nothing to commit but the result.
 
@@ -80,7 +80,7 @@ new version whenever `main` changes.
 | What | Where |
 | --- | --- |
 | Each skill | `.claude/skills/<name>` |
-| Rules block | `CLAUDE.md`, between `<!-- BEGIN/END @10xpackages/ai-toolkit -->` markers |
+| Rules block | `CLAUDE.md`, between `<!-- BEGIN/END @wisniewskikr/ai-toolkit -->` markers |
 | Registry line | `.npmrc` (JS/TS mode only, appended if missing) |
 | Manifest | `.claude/.ai-toolkit-manifest.json` |
 
@@ -88,8 +88,8 @@ new version whenever `main` changes.
 
 | Action | JavaScript / TypeScript | Java / other |
 | --- | --- | --- |
-| **Update** | Bump the dependency version → re-install. New skills roam in, withdrawn ones are pruned | Re-run `npx @10xpackages/ai-toolkit install` — same manifest diff prunes withdrawn skills |
-| **Uninstall** | Run `ai-toolkit uninstall` **before** dropping the dependency (npm has no uninstall hook) | Run `npx @10xpackages/ai-toolkit uninstall` |
+| **Update** | Bump the dependency version → re-install. New skills roam in, withdrawn ones are pruned | Re-run `npx @wisniewskikr/ai-toolkit install` — same manifest diff prunes withdrawn skills |
+| **Uninstall** | Run `ai-toolkit uninstall` **before** dropping the dependency (npm has no uninstall hook) | Run `npx @wisniewskikr/ai-toolkit uninstall` |
 
 Re-runs are diff-free in both modes.
 

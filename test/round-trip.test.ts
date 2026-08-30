@@ -30,8 +30,8 @@ import { PACKAGE_NAME, PACKAGE_VERSION } from "../src/manifest";
  */
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
-const INSTALLED_PKG = join("node_modules", "@10xpackages", "ai-toolkit");
-const MAPPING_LINE = "@10xpackages:registry=https://npm.pkg.github.com";
+const INSTALLED_PKG = join("node_modules", "@wisniewskikr", "ai-toolkit");
+const MAPPING_LINE = "@wisniewskikr:registry=https://npm.pkg.github.com";
 const AUTH_LINE = "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}";
 const TEST_TIMEOUT = 180_000;
 
@@ -140,7 +140,7 @@ describe("registry round trip — tarball install into a consumer project", () =
         read(root, ".claude", ".ai-toolkit-manifest.json"),
       ];
       execSync("node bin/ai-toolkit.js install", {
-        cwd: join(root, "node_modules", "@10xpackages", "ai-toolkit"),
+        cwd: join(root, "node_modules", "@wisniewskikr", "ai-toolkit"),
         env: npmEnv(null),
         stdio: "pipe",
       });

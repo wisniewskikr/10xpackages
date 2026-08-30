@@ -1,4 +1,4 @@
-# Consumer CI — pull the published @10xpackages/ai-toolkit version (S-07).
+# Consumer CI — pull the published @wisniewskikr/ai-toolkit version (S-07).
 #
 # Copy this into a CONSUMER repo as .github/workflows/sync-ai-toolkit.yml.
 # It is an example only — it does not run in the toolkit repo itself.
@@ -6,8 +6,8 @@
 # Two one-time prerequisites in the consumer repo:
 #   1. Commit a project .npmrc containing exactly the registry-mapping line
 #      (this line, and only this line — never a token):
-#          @10xpackages:registry=https://npm.pkg.github.com
-#   2. Add "@10xpackages/ai-toolkit" to package.json "dependencies" (or
+#          @wisniewskikr:registry=https://npm.pkg.github.com
+#   2. Add "@wisniewskikr/ai-toolkit" to package.json "dependencies" (or
 #      "devDependencies") at the version you want.
 #
 # One-time org setting: the private package's "Manage Actions access" list
@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: 20
           registry-url: "https://npm.pkg.github.com"
-          scope: "@10xpackages"
+          scope: "@wisniewskikr"
 
       # `npm ci` installs the pinned version and triggers the package's
       # postinstall -> `ai-toolkit install`, which reconciles .claude/skills/,

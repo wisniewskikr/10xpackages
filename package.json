@@ -1,11 +1,15 @@
 {
-  "name": "@10xpackages/ai-toolkit",
+  "name": "@wisniewskikr/ai-toolkit",
   "version": "0.1.0",
   "description": "Team AI artifacts (skills + rules) distributed as a private npm package through GitHub Packages",
   "license": "UNLICENSED",
   "type": "commonjs",
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wisniewskikr/10xpackages.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"

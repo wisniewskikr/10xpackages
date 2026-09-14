@@ -1,6 +1,6 @@
 {
   "name": "@wisniewskikr/ai-toolkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Team AI artifacts (skills + rules) distributed as a private npm package through GitHub Packages",
   "license": "UNLICENSED",
   "type": "commonjs",

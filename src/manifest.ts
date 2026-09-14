@@ -19,7 +19,7 @@ export const PACKAGE_NAME = "@wisniewskikr/ai-toolkit";
  * Package version, hand-synced with `package.json#version` for the MVP.
  * `test/manifest.test.ts` asserts the two stay equal; OQ-1 tracks automating this.
  */
-export const PACKAGE_VERSION = "0.1.1";
+export const PACKAGE_VERSION = "0.1.2";
 
 /** Opening fence for the managed team-rules block in the consumer rules file. */
 export const SENTINEL_BEGIN = `<!-- BEGIN ${PACKAGE_NAME} -->`;

@@ -46,6 +46,8 @@ new version whenever `main` changes.
 
 **One rule to remember:** every change to a packaged file needs a manual
 `version` bump in `package.json` before merge, or the CI publish job fails red.
+Bump `PACKAGE_VERSION` in `src/manifest.ts` to match — `test/manifest.test.ts`
+asserts the two stay in sync, so a mismatch fails the same way.
 
 ## User usage
 
